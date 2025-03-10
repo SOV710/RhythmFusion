@@ -7,7 +7,17 @@
       <nav class="nav">
         <!-- 示例导航菜单项 -->
         <button @click="goHome">首页</button>
+
         <button @click="searchSongs">搜索</button>
+        <transition name="fade">
+          <div v-if="showSearch" class="overlay" @click.self="closeSearch">
+            <div class="search-box">
+              <input type="text" placeholder="请输入搜索内容..." />
+              <button @click="closeSearch">关闭</button>
+            </div>
+          </div>
+        </transition>
+
         <button @click="showRecommendations">推荐</button>
       </nav>
       <div class="auth-buttons">
@@ -29,6 +39,7 @@ export default defineComponent({
       console.log('导航到首页')
     },
     searchSongs() {
+      showSearch = true
       console.log('触发搜索')
     },
     showRecommendations() {
