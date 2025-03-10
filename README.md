@@ -1,6 +1,6 @@
-# My Music App
+# RhythmFusion
 
-My Music App 是一个前后端分离的音乐推荐网站，旨在为用户提供基于内容与协同过滤相结合的混合推荐。前端采用 Vue 3 + Vite + TypeScript 构建，后端使用 Django 5 + Django REST Framework + MySQL 开发，状态管理采用 Pinia。整体界面设计简约现代，以深色背景和绿色点缀为主，页面布局模仿 Spotify 的风格。
+RhythmFusion 是一个前后端分离的音乐推荐网站，旨在为用户提供基于内容与协同过滤相结合的混合推荐。前端采用 Vue 3 + Vite + TypeScript 构建，后端使用 Django 5 + Django REST Framework + MySQL 开发，状态管理采用 Pinia。整体界面设计简约现代，以深色背景和绿色点缀为主。
 
 ## 项目特点
 
@@ -113,7 +113,7 @@ My Music App 是一个前后端分离的音乐推荐网站，旨在为用户提�
 
 ## 功能简介
 
-My Music App 是一个基于前后端分离的音乐推荐网站，旨在为用户提供个性化的音乐推荐服务。主要功能包括：
+RhythmFusion 是一个基于前后端分离的音乐推荐网站，旨在为用户提供个性化的音乐推荐服务。主要功能包括：
 - 用户注册与登录（自定义用户模型）
 - 歌曲管理：展示和管理歌曲信息
 - 歌单管理：用户可以创建和管理自己的歌单，歌单中包含多个歌曲
