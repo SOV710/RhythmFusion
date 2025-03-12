@@ -19,7 +19,7 @@
         <button @click="showRecommendations">推荐</button>
       </nav>
       <div class="auth-buttons">
-        <button @click="login">登录</button>
+        <button @click="openLoginModal">登录</button>
         <button @click="register">注册</button>
       </div>
       <div v-if="showRegisterForm" class="register-form">
@@ -29,6 +29,7 @@
         <button @click="submitRegistration">提交注册</button>
       </div>
     </div>
+    <LoginModal v-model:show="showLoginModal" />
   </header>
 </template>
 
@@ -36,9 +37,13 @@
 import { defineComponent, ref } from 'vue'
 import axios from '@/axios'
 import { useUserStore } from '@/stores'
+import LoginModal from './LoginModal.vue'
 
 export default defineComponent({
   name: 'AppHeader',
+  components: {
+    LoginModal
+  },
   setup() {
     const showSearch = ref(false)
     const searchQuery = ref('')
@@ -49,6 +54,8 @@ export default defineComponent({
       password: '',
       email: ''
     })
+
+    const showLoginModal = ref(false)
 
     const userstore = useUserStore()
 
@@ -71,13 +78,16 @@ export default defineComponent({
 
     const login = async () => {
       try {
-        // 例如：调用用户信息接口验证登录状态
         const response = await axios.get('users/profile/')
         console.log('Login Success', response.data)
-        userstore.setusername(response.data.username)
+        userstore.setUsername(response.data.username)
       } catch (error) {
         console.error('register error:', error)
       }
+    }
+
+    const openLoginModal = () => {
+      showLoginModal.value = true
     }
 
     const register = () => {
@@ -85,19 +95,21 @@ export default defineComponent({
       console.log('显示注册表单')
     }
 
+    /*
     const submitregistration = async () => {
       try {
         // Send register request to backend，backend api url is /api/users/register/
         const response = await axios.post('users/register/', registerdata.value)
-        console.log('注册成功', response.data)
+        console.log('Register Success', response.data)
         // 注册成功后，可以更新 pinia 中的用户状态
-        userstore.setusername(response.data.username)
+        userstore.setUsername(response.data.username)
         // 隐藏注册表单或执行其他逻辑
         showregisterform.value = false
       } catch (error: unknown) {
-        console.error('注册失败', error.response.data)
+        console.error('Register Failed', error.response.data)
       }
     }
+    */
 
     return {
       showSearch,
@@ -109,6 +121,7 @@ export default defineComponent({
       closeSearch,
       showRecommendations,
       login,
+      openLoginModal,
       register,
       // submitRegistration
     }
