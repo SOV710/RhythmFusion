@@ -5,11 +5,6 @@ from django.conf import settings
 
 
 class RecommendationLog(models.Model):
-    """
-    推荐日志模型（可选），记录每次推荐计算的基本信息，
-    便于后续调试和数据分析。
-    """
-
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,

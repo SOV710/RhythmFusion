@@ -10,12 +10,6 @@ User = get_user_model()
 
 
 class UserRegistrationAPIView(APIView):
-    """
-    用户注册 API 视图：
-    接收前端发送的 JSON 数据，使用 UserSerializer 进行反序列化和验证，
-    创建新的用户，并返回创建成功的用户数据。
-    """
-
     def post(self, request, format=None):
         # request.data 中已经包含前端传来的 JSON 数据
         serializer = UserSerializer(data=request.data)
@@ -40,8 +34,7 @@ class UserProfileAPIView(APIView):
 
     def put(self, request, format=None):
         # 更新当前登录用户的信息，实例为 request.user
-        serializer = UserSerializer(
-            request.user, data=request.data, partial=True)
+        serializer = UserSerializer(request.user, data=request.data, partial=True)
         if serializer.is_valid():
             user = serializer.save()  # 调用 update() 方法更新用户
             return Response(UserSerializer(user).data, status=status.HTTP_200_OK)
