@@ -19,7 +19,7 @@ class UserSerializer(serializers.ModelSerializer):
         password = validated_data.pop("password", None)
         user = User(**validated_data)
         if password:
-            user.set_password(password)  # 对密码进行加密
+            user.set_password(password)
         user.save()
         return user
 
