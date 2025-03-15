@@ -15,10 +15,15 @@ export const useSongStore = defineStore('song', () => {
 
 export const useUserStore = defineStore('user', () => {
   const username = ref<string>('未登录')
+  const avatar = ref<string>('/default-avatar.png')
 
   function setUsername(newUsername: string) {
     username.value = newUsername
   }
 
-  return { username, setUsername }
+  function setAvatar(newAvatar: string) {
+    avatar.value = newAvatar
+  }
+
+  return { username, setUsername, setAvatar }
 })

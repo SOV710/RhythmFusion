@@ -3,7 +3,7 @@
   <aside class="sidebar">
     <div class="user-info">
       <!-- 示例用户信息展示 -->
-      <img src="/default-avatar.png" alt="Avatar" class="avatar" />
+      <img src="avatar" alt="Avatar" class="avatar" />
       <p class="username">{{ username }}</p>
     </div>
     <div class="menu">
@@ -21,10 +21,11 @@ import { useUserStore } from '../stores'
 export default defineComponent({
   name: 'SideBar',
   setup() {
-    // 使用 Pinia 获取用户信息状态
     const userStore = useUserStore()
+    const username = computed(() => userStore.username)
+    const avatar = computed(() => userStore.avatar)
     return {
-      username: userStore.username || '未登录'
+      username, avatar
     }
   },
   methods: {

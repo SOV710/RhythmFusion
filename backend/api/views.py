@@ -6,30 +6,30 @@ from rest_framework.response import Response
 
 class BaseAPIView(APIView):
     """
-    基础 API 视图类，提供统一响应格式和错误处理：
-    返回的数据格式统一为：
+    Base API view class that provides a unified response format and error handling:
+    The returned data is standardized as follows:
     {
-        "status": "success" 或 "error",
-        "data": <具体数据或 null>,
-        "message": <提示信息>
+        "status": "success" or "error",
+        "data": <specific data or null>,
+        "message": <prompt message>
     }
-    所有其他 API 视图可继承此类以获得统一的响应结构。
+    All other API views can inherit from this class to ensure a consistent response structure.
     """
 
     def success_response(self, data, message=""):
         """
-        构造成功响应
-        :param data: 成功返回的数据
-        :param message: 可选的提示信息
-        :return: Response 对象
+        Construct a success response.
+        :param data: Data successfully returned
+        :param message: Optional prompt message
+        :return: Response object
         """
         return Response({"status": "success", "data": data, "message": message})
 
     def error_response(self, errors, message=""):
         """
-        构造错误响应
-        :param errors: 错误信息（通常为 serializer.errors）
-        :param message: 可选的错误提示
+        Construct a failed response
+        :param errors: error info (usually serializer.errors
+        :param message: optional error hint
         :return: Response 对象
         """
         return Response(
