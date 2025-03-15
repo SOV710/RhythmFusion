@@ -1,7 +1,7 @@
 <template>
   <header class="header">
     <div class="header-container">
-      <div class="logo">My Music App</div>
+      <div class="logo">Rhythm Fusion</div>
       <nav class="nav">
         <button @click="goHome">首页</button>
         <button @click="searchSongs">搜索</button>

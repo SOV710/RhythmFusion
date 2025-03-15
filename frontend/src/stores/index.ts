@@ -1,7 +1,7 @@
 // src/stores/index.ts
 
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 
 export const useSongStore = defineStore('song', () => {
   const songs = ref<Array<{ id: number; title: string; artist: string }>>([])
@@ -17,6 +17,10 @@ export const useUserStore = defineStore('user', () => {
   const username = ref<string>('未登录')
   const avatar = ref<string>('/default-avatar.png')
 
+  const displayName = computed(() => {
+    return username.value !== '未登录' ? username.value : '游客'
+  })
+
   function setUsername(newUsername: string) {
     username.value = newUsername
   }
@@ -25,5 +29,5 @@ export const useUserStore = defineStore('user', () => {
     avatar.value = newAvatar
   }
 
-  return { username, setUsername, setAvatar }
+  return { username, avatar, setUsername, setAvatar, displayName }
 })
