@@ -37,7 +37,8 @@
       padding: 0.5rem;
       margin-bottom: 0.5rem;
       background-color: $primary-color;
-      border: none;
+      border: 2px solid $primary-color;
+      border-radius: 50px;
       color: $text-color;
       cursor: pointer;
     }

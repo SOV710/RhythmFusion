@@ -7,6 +7,15 @@
     </section>
     <section class="recommendation-section">
       <button @click="getRecommendations">获取推荐</button>
+      <button @click="triggerFileSelect">导入CSV歌单</button>
+      <input
+        ref="fileInput"
+        type="file"
+        accept=".csv"
+        style="display: none;"
+        @change="handleFileChange"
+      />
+
       <div v-if="recommendations.length">
         <h3>推荐歌曲：</h3>
         <ul>
@@ -65,12 +74,17 @@ export default defineComponent({
         })
     }
 
+    const importPlaylist = () => {
+      console.log('正在导入...')
+    }
+
     return {
       searchQuery,
       recommendations,
       songs: songStore.songs,
       search,
-      getRecommendations
+      getRecommendations,
+      importPlaylist
     }
   }
 })
