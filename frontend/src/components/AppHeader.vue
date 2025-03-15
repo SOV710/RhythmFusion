@@ -1,4 +1,3 @@
-<!-- src/components/AppHeader.vue -->
 <template>
   <header class="header">
     <div class="header-container">
@@ -9,34 +8,44 @@
         <button @click="showRecommendations">推荐</button>
       </nav>
       <div class="auth-buttons">
-        <button @click="login">登录</button>
-        <button @click="register">注册</button>
+        <button @click="openLogin">登录</button>
+        <button @click="openRegister">注册</button>
       </div>
     </div>
+    <UserLogin v-if="showLogin" @close="showLogin = false" />
+    <UserRegister v-if="showRegister" @close="showRegister = false" />
   </header>
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue'
+import { defineComponent, ref } from 'vue'
+import UserLogin from './UserLogin.vue'
+import UserRegister from './UserRegister.vue'
 
 export default defineComponent({
   name: 'AppHeader',
-  methods: {
-    goHome() {
+  components: { UserLogin, UserRegister },
+  setup() {
+    const showLogin = ref(false)
+    const showRegister = ref(false)
+
+    function goHome() {
       console.log('导航到首页')
-    },
-    searchSongs() {
-      console.log('触发搜索')
-    },
-    showRecommendations() {
-      console.log('显示推荐')
-    },
-    login() {
-      console.log('fuck me')
-    },
-    register() {
-      console.log('注册操作')
     }
+    function searchSongs() {
+      console.log('触发搜索')
+    }
+    function showRecommendations() {
+      console.log('显示推荐')
+    }
+    function openLogin() {
+      showLogin.value = true
+    }
+    function openRegister() {
+      showRegister.value = true
+    }
+
+    return { goHome, searchSongs, showRecommendations, openLogin, openRegister, showLogin, showRegister }
   }
 })
 </script>

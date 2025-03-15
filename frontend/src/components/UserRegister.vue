@@ -1,13 +1,16 @@
 <template>
   <div class="modal">
     <div class="modal-content">
-      <h2>登录</h2>
-      <form @submit.prevent="submitLogin">
+      <h2>注册</h2>
+      <!-- 注册表单 -->
+      <form @submit.prevent="submitRegister">
         <label>用户名:</label>
         <input v-model="form.username" type="text" placeholder="请输入用户名" required />
+        <label>邮箱:</label>
+        <input v-model="form.email" type="email" placeholder="请输入邮箱" required />
         <label>密码:</label>
         <input v-model="form.password" type="password" placeholder="请输入密码" required />
-        <button type="submit">登录</button>
+        <button type="submit">注册</button>
       </form>
       <button @click="$emit('close')">关闭</button>
     </div>
@@ -20,26 +23,26 @@ import axios from '../axios'
 import { useUserStore } from '../stores'
 
 export default {
-  name: "UserLogin",
+  name: "UserRegister",
   setup(props, { emit }) {
     const form = ref({
       username: '',
+      email: '',
       password: ''
     })
     const userStore = useUserStore()
 
-    async function submitLogin() {
+    async function submitRegister() {
       try {
-        const response = await axios.post('user/login/', form.value)
+        const response = await axios.post('user/register/', form.value)
         userStore.setUsername(response.data.username)
-
         emit('close')
       } catch (error) {
-        console.error("登录失败：", error)
+        console.error("注册失败：", error)
       }
     }
 
-    return { form, submitLogin }
+    return { form, submitRegister }
   }
 }
 </script>
