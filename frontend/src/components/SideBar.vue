@@ -8,7 +8,7 @@
     </div>
     <div class="menu">
       <button @click="managePlaylists">歌单管理</button>
-      <button @click="openSettings">网页设置</button>
+      <button @click="openSettings">设置</button>
     </div>
   </aside>
 </template>

@@ -19,7 +19,7 @@ export default defineComponent({
       message.value = args.join(' ')
       setTimeout(() => {
         message.value = ''
-      }, 3000)
+      }, 1000)
     }
 
     return { message }
