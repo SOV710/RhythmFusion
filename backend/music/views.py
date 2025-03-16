@@ -112,7 +112,7 @@ class UploadCSVView(APIView):
 
             return Response(
                 {
-                    "message": "CSV文件处理成功！",
+                    "message": "CSV file processed successfully!",
                     "inserted_count": len(songs_to_create),
                     "genre": genre,
                 },
