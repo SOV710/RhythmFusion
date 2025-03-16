@@ -2,6 +2,7 @@
 
 @use "./_variables.scss" as *;
 @use "./_mixins.scss" as *;
+@use "sass:color";
 
 .modal {
   position: fixed;
@@ -51,7 +52,7 @@
     transition: background-color 0.3s ease;
 
     &:hover {
-      background-color: darken($primary-color, 10%);
+      background-color: color.adjust($primary-color, $lightness: -10%);
     }
   }
 }
