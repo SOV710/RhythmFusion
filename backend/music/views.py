@@ -12,10 +12,20 @@ import io
 
 
 class SongListAPIView(APIView):
-    # return all songs
     def get(self, request, format=None):
-        songs = Song.objects.all()  # 获取所有歌曲
-        # 序列化 QuerySet，指定 many=True
+        # Get the query keyword passed from the frontend
+        search_query = request.query_params.get("search")
+
+        # If a search query parameter is provided, perform simple filtering;
+        # otherwise, return all songs.
+        if search_query:
+            # Here, icontains is used for case-insensitive fuzzy matching.
+            songs = Song.objects.filter(
+                title__icontains=search_query
+            ) | Song.objects.filter(artist__icontains=search_query)
+        else:
+            songs = Song.objects.all()
+
         serializer = SongSerializer(songs, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 

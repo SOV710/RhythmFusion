@@ -53,7 +53,7 @@ export default defineComponent({
     const search = () => {
       console.log('搜索关键词：', searchQuery.value)
       // such as call /api/songs/?search=keyword
-      axios.get(`http://127.0.0.1:8000/api/songs/?search=${searchQuery.value}`)
+      axios.get(`http://127.0.0.1:8000/music/?search=${searchQuery.value}`)
         .then(response => {
           songStore.setSongs(response.data)
         })
