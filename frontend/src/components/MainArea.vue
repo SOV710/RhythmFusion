@@ -2,7 +2,7 @@
 <template>
   <main class="main-area">
     <section class="search-section">
-      <input type="text" v-model="searchQuery" placeholder="搜索歌曲..." />
+      <input type="text" v-model="searchQuery" placeholder="搜索歌曲..." @keyup.enter="search"/>
       <button @click="search">搜索</button>
     </section>
     <section class="recommendation-section">
@@ -102,9 +102,9 @@ export default defineComponent({
             headers: { 'Content-Type': 'multipart/form-data' }
           }
         )
-        console.log('CSV导入成功，服务器返回：', response.data)
+        console.log('CSV imported successfully, server return: ', response)
       } catch (error) {
-        console.error('CSV导入失败：', error)
+        console.error('CSV imported failed: ', error)
       } finally {
         // 清空文件选择（可选）
         target.value = ''
