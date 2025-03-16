@@ -27,9 +27,10 @@
     </section>
     <section class="song-list-section">
       <h3>歌曲列表：</h3>
-      <ul>
-        <li v-for="song in songs" :key="song.id">
-          {{ song.title }} by {{ song.artist }}
+      <ul class="song-list">
+        <li v-for="song in songs" :key="song.id" class="song-item">
+          <div class="song-title">{{ song.title }}</div>
+          <div class="song-artist">by {{ song.artist }}</div>
         </li>
       </ul>
     </section>
@@ -40,18 +41,20 @@
 import { defineComponent, ref } from 'vue'
 import axios from 'axios'
 import { useSongStore } from '../stores'
+import { storeToRefs } from 'pinia'
 
 export default defineComponent({
   name: 'MainArea',
   setup() {
     const songStore = useSongStore()
+    const { songs } = storeToRefs(songStore)
     // Local state: search keywords and recommended results
     const searchQuery = ref('')
     const recommendations = ref<Record<string, number>>({})
     const fileInput = ref<HTMLInputElement | null>(null)
 
     const search = () => {
-      console.log('搜索关键词：', searchQuery.value)
+      console.log('Search Keywords: ', searchQuery.value)
       // such as call /api/songs/?search=keyword
       axios.get(`http://127.0.0.1:8000/music/?search=${searchQuery.value}`)
         .then(response => {
@@ -115,7 +118,7 @@ export default defineComponent({
     return {
       searchQuery,
       recommendations,
-      songs: songStore.songs,
+      songs,
       search,
       getRecommendations,
       importPlaylist,
