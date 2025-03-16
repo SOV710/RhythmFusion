@@ -44,16 +44,15 @@ import { useSongStore } from '../stores'
 export default defineComponent({
   name: 'MainArea',
   setup() {
-    // Pinia store 管理歌曲数据
     const songStore = useSongStore()
-    // 本地状态：搜索关键词和推荐结果
+    // Local state: search keywords and recommended results
     const searchQuery = ref('')
     const recommendations = ref<Record<string, number>>({})
+    const fileInput = ref<HTMLInputElement | null>(null)
 
-    // 搜索方法（示例：调用后端 API 进行歌曲搜索，待后续实现）
     const search = () => {
       console.log('搜索关键词：', searchQuery.value)
-      // 例如调用后端 /api/songs/?search=关键词
+      // such as call /api/songs/?search=keyword
       axios.get(`http://127.0.0.1:8000/api/songs/?search=${searchQuery.value}`)
         .then(response => {
           songStore.setSongs(response.data)
@@ -63,7 +62,7 @@ export default defineComponent({
         })
     }
 
-    // 获取推荐方法，调用后端推荐接口
+    // get the recommendation
     const getRecommendations = () => {
       axios.get('http://127.0.0.1:8000/api/recommendations/')
         .then(response => {
@@ -72,6 +71,41 @@ export default defineComponent({
         .catch(error => {
           console.error('推荐获取失败：', error.response.data)
         })
+    }
+
+    // import CSV playlist
+    const triggerFileSelect = () => {
+      fileInput.value?.click()
+    }
+
+    const handleFileChange = async (event: Event) => {
+      const target = event.target as HTMLInputElement
+      if (!target.files?.length) return
+
+      const file = target.files[0]
+      if (!file) return
+
+      console.log('Select CSV file：', file.name)
+
+      // Prepare FormData
+      const formData = new FormData()
+      formData.append('csv_file', file)
+
+      try {
+        const response = await axios.post(
+          'http://127.0.0.1:8000/music/csv/', // backend api
+          formData,
+          {
+            headers: { 'Content-Type': 'multipart/form-data' }
+          }
+        )
+        console.log('CSV导入成功，服务器返回：', response.data)
+      } catch (error) {
+        console.error('CSV导入失败：', error)
+      } finally {
+        // 清空文件选择（可选）
+        target.value = ''
+      }
     }
 
     const importPlaylist = () => {
@@ -84,7 +118,9 @@ export default defineComponent({
       songs: songStore.songs,
       search,
       getRecommendations,
-      importPlaylist
+      importPlaylist,
+      triggerFileSelect,
+      handleFileChange
     }
   }
 })
