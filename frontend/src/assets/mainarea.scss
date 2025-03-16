@@ -1,11 +1,10 @@
 // src/assets/mainarea.scss
 @use "./_variables.scss" as *;
 
-// 主内容区域样式
 .main-area {
   flex: 1;
   padding: 1rem;
-  background-color: $background-color; // 深色背景
+  background-color: $background-color; // dark
   color: $text-color;
 
   .search-section {
@@ -40,6 +39,12 @@
       border-radius: 50px;
       color: $text-color;
       cursor: pointer;
+    }
+
+    .hidden-file-input {
+      position: absolute;
+      left: -9999px;
+      opacity: 0;
     }
 
     ul {

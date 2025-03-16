@@ -120,7 +120,8 @@ export default defineComponent({
       getRecommendations,
       importPlaylist,
       triggerFileSelect,
-      handleFileChange
+      handleFileChange,
+      fileInput
     }
   }
 })
