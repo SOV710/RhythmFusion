@@ -2,11 +2,6 @@
   <header class="header">
     <div class="header-container">
       <div class="logo">Rhythm Fusion</div>
-      <nav class="nav">
-        <button @click="goHome">首页</button>
-        <button @click="searchSongs">搜索</button>
-        <button @click="showRecommendations">推荐</button>
-      </nav>
       <div class="auth-buttons">
         <button @click="openLogin">登录</button>
         <button @click="openRegister">注册</button>
