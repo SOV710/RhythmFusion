@@ -38,7 +38,8 @@ class PlaylistDetailAPIView(APIView):
 
     def put(self, request, pk, format=None):
         playlist = get_object_or_404(Playlist, pk=pk, user=request.user)
-        serializer = PlaylistSerializer(playlist, data=request.data, partial=True)
+        serializer = PlaylistSerializer(
+            playlist, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()  # 更新歌单信息
             return Response(serializer.data, status=status.HTTP_200_OK)

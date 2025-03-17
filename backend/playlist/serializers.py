@@ -6,12 +6,6 @@ from music.serializers import SongSerializer  # 引入已有的 Song 序列化�
 
 
 class PlaylistSerializer(serializers.ModelSerializer):
-    # 方案一：仅返回歌曲主键
-    # songs = serializers.PrimaryKeyRelatedField(
-    #     many=True, queryset=SongSerializer.Meta.model.objects.all()
-    # )
-
-    # 方案二：使用嵌套序列化，显示歌曲的详细信息
     songs = SongSerializer(many=True, read_only=True)
 
     class Meta:
