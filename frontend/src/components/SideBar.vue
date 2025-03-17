@@ -2,36 +2,49 @@
 <template>
   <aside class="sidebar">
     <div class="user-info">
-      <!-- 示例用户信息展示 -->
       <img :src="userStore.avatar" alt="Avatar" class="avatar" />
       <p class="username">{{ userStore.displayName }}</p>
     </div>
     <div class="menu">
-      <button @click="managePlaylists">歌单管理</button>
+      <button @click="openPlaylistModal">歌单管理</button>
       <button @click="openSettings">设置</button>
     </div>
+    <PlayList v-if="showPlaylistModal" @close="closePlaylistModal" />
   </aside>
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue'
+import { defineComponent, ref } from 'vue'
 import { useUserStore } from '../stores'
+import Playlist from './PlayList.vue'
 
 export default defineComponent({
   name: 'SideBar',
   setup() {
     const userStore = useUserStore()
+    const showPlaylistModal = ref(false)
+
+    function openPlaylistModal() {
+      showPlaylistModal.value = true
+    }
+
+    function closePlaylistModal() {
+      showPlaylistModal.value = false
+    }
+
+    function openSettings() {
+      console.log('打开网页设置')
+    }
+
     return {
-      userStore
+      userStore,
+      Playlist,
+      openPlaylistModal,
+      closePlaylistModal,
+      openSettings,
     }
   },
   methods: {
-    managePlaylists() {
-      console.log('切换到歌单管理')
-    },
-    openSettings() {
-      console.log('打开网页设置')
-    }
   }
 })
 </script>
