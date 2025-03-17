@@ -16,10 +16,11 @@
 <script lang="ts">
 import { defineComponent, ref } from 'vue'
 import { useUserStore } from '../stores'
-import Playlist from './PlayList.vue'
+import PlayList from './PlayList.vue'
 
 export default defineComponent({
   name: 'SideBar',
+  components: { PlayList },
   setup() {
     const userStore = useUserStore()
     const showPlaylistModal = ref(false)
@@ -38,7 +39,7 @@ export default defineComponent({
 
     return {
       userStore,
-      Playlist,
+      showPlaylistModal,
       openPlaylistModal,
       closePlaylistModal,
       openSettings,
