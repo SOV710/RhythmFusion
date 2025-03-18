@@ -29,8 +29,13 @@
       <h3>歌曲列表：</h3>
       <ul class="song-list">
         <li v-for="song in songs" :key="song.id" class="song-item">
-          <div class="song-title">{{ song.title }}</div>
-          <div class="song-artist">by {{ song.artist }}</div>
+          <div class="song-info">
+            <div class="song-title">{{ song.title }}</div>
+            <div class="song-artist">by {{ song.artist }}</div>
+          </div>
+          <button @click="triggerRecommendation">
+            <img src='@/assets/three-dots.svg' alt='three dots' />
+          </button>
         </li>
       </ul>
     </section>
@@ -74,6 +79,10 @@ export default defineComponent({
         .catch(error => {
           console.error('推荐获取失败：', error.response.data)
         })
+    }
+
+    const triggerRecommendation = () => {
+      console.log("Press me")
     }
 
     // import CSV playlist
@@ -121,6 +130,7 @@ export default defineComponent({
       songs,
       search,
       getRecommendations,
+      triggerRecommendation,
       importPlaylist,
       triggerFileSelect,
       handleFileChange,

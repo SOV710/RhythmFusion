@@ -1,5 +1,6 @@
 // src/assets/mainarea.scss
 @use "./_variables.scss" as *;
+@use "sass:color";
 
 .main-area {
   flex: 1;
@@ -75,7 +76,9 @@
         width: 79%;
         margin-bottom: 1rem;
         display: flex;
-        flex-direction: column;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
         transition: background 0.3s;
 
         &:hover {
@@ -86,11 +89,28 @@
           font-weight: bold;
           font-size: 1.2rem;
           margin-bottom: 0.5rem;
+          flex-shrink: 0;
         }
 
         .song-artist {
           font-size: 1rem;
           color: #555;
+          flex-grow: 1;
+          margin-right: 10px;
+        }
+
+        button {
+          padding: 0.2rem 0.2rem;
+          background-color: #626262;
+          border: 2px solid #626262;
+          border-radius: 50px;
+          cursor: pointer;
+          transition: background-color 0.3s ease;
+          opacity: 80%;
+
+          &:hover {
+            background-color: color.adjust($primary-color, $lightness: -10%);
+          }
         }
       }
     }
