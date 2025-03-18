@@ -14,7 +14,7 @@
           {{ playlist.name }}
         </div>
         <!-- 始终显示“create your playlist”盒子 -->
-        <div class="playlist-item create-item" @click="createPlaylist">
+        <div class="playlist-item-create-item" @click="createPlaylist">
           {{ placeholder }}
         </div>
       </div>
@@ -39,7 +39,7 @@ export default defineComponent({
   setup(props, { emit }) {
     // 保存歌单数据和占位文本
     const playlists = ref<Playlist[]>([])
-    const placeholder = ref('create your playlist')
+    const placeholder = ref('Create Your Playlist')
 
     // 组件挂载时，获取当前用户的歌单数据
     onMounted(async () => {
@@ -80,5 +80,5 @@ export default defineComponent({
 </script>
 
 <style lang="scss" scoped>
-@use "../assets/modal.scss";
+@use "../assets/playlist.scss";
 </style>
