@@ -1,5 +1,7 @@
 # RhythmFusion Music Recommendation System
 
+[中文文档](README_zh.md)
+
 ## Description
 RhythmFusion is a modern music recommendation system built with Django and Vue.js. It provides personalized music recommendations, playlist management, and a seamless user experience through its intuitive interface.
 
@@ -50,8 +52,8 @@ RhythmFusion is a modern music recommendation system built with Django and Vue.j
 ### Backend Setup
 1. Clone the repository
 ```bash
-git clone <repository-url>
-cd godjango/backend
+git clone https://github.com/SOV710/RhythmFusion.git
+cd RhythmFusion/backend
 ```
 
 2. Create and activate virtual environment
@@ -143,7 +145,7 @@ frontend/
 - Ensure all tests pass before submitting PR
 
 ## License
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the GNU General Public License v3.0 - see the [LICENSE](LICENSE) file for details.
 
 ## Acknowledgments
 - Django team for the excellent web framework
