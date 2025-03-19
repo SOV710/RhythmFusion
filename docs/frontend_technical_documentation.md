@@ -1,8 +1,8 @@
-# GoDjango 音乐推荐系统前端技术文档
+# RhythmFusion 音乐推荐系统前端技术文档
 
 ## 1. 项目概述
 
-GoDjango 前端是一个基于 Vue 3 + TypeScript + Vite 构建的现代化单页面应用（SPA），采用组件化开发方式，实现了用户界面与业务逻辑的分离。项目使用 Pinia 进行状态管理，Axios 处理 HTTP 请求，并采用 SCSS 进行样式管理。
+RhythmFusion 前端是一个基于 Vue 3 + TypeScript + Vite 构建的现代化单页面应用（SPA），采用组件化开发方式，实现了用户界面与业务逻辑的分离。项目使用 Pinia 进行状态管理，Axios 处理 HTTP 请求，并采用 SCSS 进行样式管理。
 
 ## 2. 技术栈
 
