@@ -33,9 +33,18 @@
             <div class="song-title">{{ song.title }}</div>
             <div class="song-artist">by {{ song.artist }}</div>
           </div>
-          <button @click="triggerRecommendation">
+          <button @click="toggleDropdown">
             <img src='@/assets/three-dots.svg' alt='three dots' />
           </button>
+
+          <!-- Dropdown Menu -->
+          <div v-if="activeDropdown === song.id" class="dropdown-menu">
+            <ul>
+              <li @click="optionSelected('Option 1')">Option 1</li>
+              <li @click="optionSelected('Option 2')">Option 2</li>
+              <li @click="optionSelected('Option 3')">Option 3</li>
+            </ul>
+          </div>
         </li>
       </ul>
     </section>
@@ -57,6 +66,8 @@ export default defineComponent({
     const searchQuery = ref('')
     const recommendations = ref<Record<string, number>>({})
     const fileInput = ref<HTMLInputElement | null>(null)
+
+    const activeDropdown = ref<number | null>(null)
 
     const search = () => {
       console.log('Search Keywords: ', searchQuery.value)
@@ -81,8 +92,12 @@ export default defineComponent({
         })
     }
 
-    const triggerRecommendation = () => {
-      console.log("Press me")
+    const toggleDropdown = () => {
+      if (activeDropdown.value === songId) {
+        activeDropdown.value = null
+      } else {
+        activeDropdown.value = songId
+      }
     }
 
     // import CSV playlist
@@ -130,7 +145,7 @@ export default defineComponent({
       songs,
       search,
       getRecommendations,
-      triggerRecommendation,
+      toggleDropdown,
       importPlaylist,
       triggerFileSelect,
       handleFileChange,
