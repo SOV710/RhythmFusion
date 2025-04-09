@@ -80,5 +80,5 @@ export default defineComponent({
 </script>
 
 <style lang="scss" scoped>
-@use "../assets/playlist.scss";
+@use "../styles/playlist.scss";
 </style>

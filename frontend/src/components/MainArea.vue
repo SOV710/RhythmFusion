@@ -34,7 +34,7 @@
             <div class="song-artist">by {{ song.artist }}</div>
           </div>
           <button @click="toggleDropdown">
-            <img src='@/assets/three-dots.svg' alt='three dots' />
+            <img src='@/styles/three-dots.svg' alt='three dots' />
           </button>
 
           <!-- Dropdown Menu -->
@@ -156,5 +156,5 @@ export default defineComponent({
 </script>
 
 <style lang="scss" scoped>
-@use "../assets/mainarea.scss";
+@use "../styles/mainarea.scss";
 </style>

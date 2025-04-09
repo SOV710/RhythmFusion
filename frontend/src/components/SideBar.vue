@@ -51,5 +51,5 @@ export default defineComponent({
 </script>
 
 <style lang="scss" scoped>
-@use "../assets/sidebar.scss";
+@use "../styles/sidebar.scss";
 </style>

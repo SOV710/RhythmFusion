@@ -46,5 +46,5 @@ export default defineComponent({
 </script>
 
 <style lang="scss" scoped>
-@use "../assets/header.scss";
+@use "../styles/header.scss";
 </style>

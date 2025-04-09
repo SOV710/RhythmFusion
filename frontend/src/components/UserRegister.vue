@@ -48,5 +48,5 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-@use "@/assets/modal.scss";
+@use "@/styles/modal.scss";
 </style>
