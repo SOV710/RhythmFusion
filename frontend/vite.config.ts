@@ -20,14 +20,4 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url))
     },
   },
-  css: {
-    preprocessorOptions: {
-      scss: {
-        additionalData: `
-          @use "./_variables.scss";
-          @use "./_mixins.scss";
-        `
-      }
-    }
-  }
 })

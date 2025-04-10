@@ -1,5 +1,7 @@
 // src/assets/modal.scss
 
+@use "./_variables.scss" as *;
+@use "./_mixins.scss" as *;
 @use "sass:color";
 
 .modal {
