@@ -1,6 +1,7 @@
 // src/assets/mainarea.scss
 @use "./_variables.scss" as *;
 @use "sass:color";
+@import "tailwindcss";
 
 .main-area {
   flex: 1;
