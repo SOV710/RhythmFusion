@@ -1,38 +1,27 @@
-<!-- src/App.vue -->
-<template>
-  <div class="app-container">
-    <ConsoleNotification />
-
-    <AppHeader />
-
-    <div class="content">
-      <SideBar />
-
-      <MainArea />
-    </div>
-  </div>
-</template>
-
-<script lang="ts">
-import { defineComponent } from 'vue'
-import AppHeader from './components/AppHeader.vue'
-import MainArea from './components/MainArea.vue'
-import SideBar from './components/SideBar.vue'
-import ConsoleNotification from './components/ConsoleNotification.vue'
-
-export default defineComponent({
-  name: 'App',
-  components: {
-    AppHeader,
-    MainArea,
-    SideBar,
-    ConsoleNotification
-  }
-})
+<script lang="ts" setup>
+import { useI18n } from '@/composables'
+const { locale } = useI18n()
 </script>
 
-<style lang="scss" scoped>
-.content {
-  padding: 1rem
+<template>
+  <el-config-provider :locale="locale">
+    <BaseHeader />
+    <el-container class="main-container flex">
+      <BaseSide />
+      <div w="full" py="2">
+        <RouterView />
+      </div>
+    </el-container>
+  </el-config-provider>
+</template>
+
+<style>
+#app {
+  text-align: center;
+  color: var(--ep-text-color-primary);
+}
+
+.main-container {
+  height: calc(100vh - var(--ep-menu-item-height) - 4px);
 }
 </style>
