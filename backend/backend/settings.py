@@ -45,8 +45,6 @@ INSTALLED_APPS = [
     "user",
     "music",
     "playlist",
-    "recommendation",
-    "api",
 ]
 
 MIDDLEWARE = [
