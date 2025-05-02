@@ -4,137 +4,70 @@ info:
   version: 1.0.0
   description: A Music Recommendation Website
 paths:
-  /api/users/login/:
-    post:
-      operationId: api_users_login_create
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      - basicAuth: []
-      - {}
-      responses:
-        '200':
-          description: No response body
-  /api/users/profile/:
+  /api/music/:
     get:
-      operationId: api_users_profile_retrieve
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      - basicAuth: []
-      - {}
-      responses:
-        '200':
-          description: No response body
-    put:
-      operationId: api_users_profile_update
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      - basicAuth: []
-      - {}
-      responses:
-        '200':
-          description: No response body
-  /api/users/register/:
-    post:
-      operationId: api_users_register_create
-      tags:
-      - api
-      security:
-      - cookieAuth: []
-      - basicAuth: []
-      - {}
-      responses:
-        '200':
-          description: No response body
-  /music/:
-    get:
-      operationId: music_retrieve
-      tags:
-      - music
-      security:
-      - cookieAuth: []
-      - basicAuth: []
-      - {}
-      responses:
-        '200':
-          description: No response body
-  /music/{id}/:
-    get:
-      operationId: music_retrieve_2
+      operationId: music_list
+      description: |-
+        Read-only list with simple keyword search on title / artist / school.
+        Inherits *ListAPIView* to get pagination off by default and
+        to keep the view minimal.
       parameters:
-      - in: path
-        name: id
+      - name: search
+        required: false
+        in: query
+        description: A search term.
         schema:
-          type: integer
-        required: true
+          type: string
       tags:
       - music
       security:
-      - cookieAuth: []
-      - basicAuth: []
+      - jwtAuth: []
       - {}
       responses:
         '200':
-          description: No response body
-    put:
-      operationId: music_update
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: integer
-        required: true
-      tags:
-      - music
-      security:
-      - cookieAuth: []
-      - basicAuth: []
-      - {}
-      responses:
-        '200':
-          description: No response body
-    delete:
-      operationId: music_destroy
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: integer
-        required: true
-      tags:
-      - music
-      security:
-      - cookieAuth: []
-      - basicAuth: []
-      - {}
-      responses:
-        '204':
-          description: No response body
-  /music/csv/:
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Song'
+          description: ''
+  /api/music/csv/:
     post:
       operationId: music_csv_create
       tags:
       - music
       security:
-      - cookieAuth: []
-      - basicAuth: []
+      - jwtAuth: []
       - {}
       responses:
         '200':
           description: No response body
-  /playlist/:
+  /api/music/genres/{code}/:
+    get:
+      operationId: music_genres_retrieve
+      description: Return the predefined song set for a fixed genre code.
+      parameters:
+      - in: path
+        name: code
+        schema:
+          type: string
+        required: true
+      tags:
+      - music
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/playlist/:
     get:
       operationId: playlist_retrieve
       tags:
       - playlist
       security:
-      - cookieAuth: []
-      - basicAuth: []
+      - jwtAuth: []
       - {}
       responses:
         '200':
@@ -144,13 +77,12 @@ paths:
       tags:
       - playlist
       security:
-      - cookieAuth: []
-      - basicAuth: []
+      - jwtAuth: []
       - {}
       responses:
         '200':
           description: No response body
-  /playlist/{id}/:
+  /api/playlist/{id}/:
     get:
       operationId: playlist_retrieve_2
       parameters:
@@ -162,8 +94,7 @@ paths:
       tags:
       - playlist
       security:
-      - cookieAuth: []
-      - basicAuth: []
+      - jwtAuth: []
       - {}
       responses:
         '200':
@@ -179,8 +110,7 @@ paths:
       tags:
       - playlist
       security:
-      - cookieAuth: []
-      - basicAuth: []
+      - jwtAuth: []
       - {}
       responses:
         '200':
@@ -196,77 +126,316 @@ paths:
       tags:
       - playlist
       security:
-      - cookieAuth: []
-      - basicAuth: []
+      - jwtAuth: []
       - {}
       responses:
         '204':
           description: No response body
-  /recommendation/:
-    get:
-      operationId: recommendation_retrieve
-      tags:
-      - recommendation
-      security:
-      - cookieAuth: []
-      - basicAuth: []
-      - {}
-      responses:
-        '200':
-          description: No response body
-  /user/login/:
+  /api/user/login/:
     post:
       operationId: user_login_create
+      description: |-
+        ▶ POST /api/user/login
+        body: {username, password}
+        resp: {refresh, access}
       tags:
       - user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Login'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Login'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Login'
+        required: true
       security:
-      - cookieAuth: []
-      - basicAuth: []
       - {}
       responses:
         '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Login'
+          description: ''
+  /api/user/logout/:
+    post:
+      operationId: user_logout_create
+      description: |-
+        客户端携带 refresh token 调用即可将其拉黑：
+        POST body: {"refresh": "<refresh_token>"}
+      tags:
+      - user
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
           description: No response body
-  /user/profile/:
+  /api/user/profile/:
     get:
       operationId: user_profile_retrieve
+      description: |-
+        GET  /api/user/profile   -> 查看自己资料
+        PATCH/PUT 同 URL        -> 修改资料
       tags:
       - user
       security:
-      - cookieAuth: []
-      - basicAuth: []
-      - {}
+      - jwtAuth: []
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
     put:
       operationId: user_profile_update
+      description: |-
+        GET  /api/user/profile   -> 查看自己资料
+        PATCH/PUT 同 URL        -> 修改资料
       tags:
       - user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/User'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/User'
+        required: true
       security:
-      - cookieAuth: []
-      - basicAuth: []
-      - {}
+      - jwtAuth: []
       responses:
         '200':
-          description: No response body
-  /user/register/:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+    patch:
+      operationId: user_profile_partial_update
+      description: |-
+        GET  /api/user/profile   -> 查看自己资料
+        PATCH/PUT 同 URL        -> 修改资料
+      tags:
+      - user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedUser'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedUser'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedUser'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+  /api/user/register/:
     post:
       operationId: user_register_create
+      description: 'POST body: {username, email?, password}'
       tags:
       - user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Register'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Register'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Register'
+        required: true
       security:
-      - cookieAuth: []
-      - basicAuth: []
+      - jwtAuth: []
       - {}
       responses:
-        '200':
-          description: No response body
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Register'
+          description: ''
 components:
+  schemas:
+    Login:
+      type: object
+      description: |-
+        继承 simplejwt 的 TokenObtainPairSerializer：
+        - 校验 username / password
+        - 成功后返回 access 与 refresh
+      properties:
+        username:
+          type: string
+          writeOnly: true
+        password:
+          type: string
+          writeOnly: true
+      required:
+      - password
+      - username
+    PatchedUser:
+      type: object
+      description: 公共资料字段；用于 profile GET / PATCH。
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        username:
+          type: string
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
+        email:
+          type: string
+          format: email
+          title: Email address
+          maxLength: 254
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+        bio:
+          type: string
+          description: 用户简介
+          maxLength: 500
+        birth_date:
+          type: string
+          format: date
+          nullable: true
+          description: 出生日期
+        avatar:
+          type: string
+          format: uri
+          nullable: true
+          description: 用户头像
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+          description: 创建时间
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+          description: 更新时间
+    Register:
+      type: object
+      description: POST /api/user/register
+      properties:
+        username:
+          type: string
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
+        email:
+          type: string
+          format: email
+          title: Email address
+          maxLength: 254
+        password:
+          type: string
+          writeOnly: true
+          minLength: 8
+      required:
+      - password
+      - username
+    Song:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        title:
+          type: string
+          maxLength: 255
+        artist:
+          type: string
+          maxLength: 255
+        school:
+          type: string
+          maxLength: 255
+      required:
+      - artist
+      - id
+      - title
+    User:
+      type: object
+      description: 公共资料字段；用于 profile GET / PATCH。
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        username:
+          type: string
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
+        email:
+          type: string
+          format: email
+          title: Email address
+          maxLength: 254
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+        bio:
+          type: string
+          description: 用户简介
+          maxLength: 500
+        birth_date:
+          type: string
+          format: date
+          nullable: true
+          description: 出生日期
+        avatar:
+          type: string
+          format: uri
+          nullable: true
+          description: 用户头像
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+          description: 创建时间
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+          description: 更新时间
+      required:
+      - created_at
+      - id
+      - updated_at
+      - username
   securitySchemes:
-    basicAuth:
+    jwtAuth:
       type: http
-      scheme: basic
-    cookieAuth:
-      type: apiKey
-      in: cookie
-      name: sessionid
+      scheme: bearer
+      bearerFormat: JWT
