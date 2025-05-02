@@ -1,125 +1,103 @@
 # music/views.py
 
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from django.db import transaction
-from .models import Song
-from .serializers import SongSerializer
-
 import csv
 import io
 
+from rest_framework import generics, status, filters
+from rest_framework.views import APIView
+from rest_framework.response import Response
 
-class SongListAPIView(APIView):
-    def get(self, request, format=None):
-        # Get the query keyword passed from the frontend
-        search_query = request.query_params.get("search")
+from django.db import transaction
+from django.http import Http404
 
-        # If a search query parameter is provided, perform simple filtering;
-        # otherwise, return all songs.
-        if search_query:
-            # Here, icontains is used for case-insensitive fuzzy matching.
-            songs = Song.objects.filter(
-                title__icontains=search_query
-            ) | Song.objects.filter(artist__icontains=search_query)
-        else:
-            songs = Song.objects.all()
+from .models import Song
+from .serializers import SongSerializer
 
-        serializer = SongSerializer(songs, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+GENRE_MAP = {
+    "pop": [1, 2, 3],
+    "rock": [4, 5],
+    "jazz": [6, 7, 8],
+}
 
 
-class SongDetailAPIView(APIView):
-    # return only one song
-    def get(self, request, pk, format=None):
-        try:
-            song = Song.objects.get(pk=pk)  # 根据主键获取 Song 实例
-        except Song.DoesNotExist:
-            return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
-        serializer = SongSerializer(song)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+class SongSearchView(generics.ListAPIView):
+    """
+    Read-only list with simple keyword search on title / artist / school.
+    Inherits *ListAPIView* to get pagination off by default and
+    to keep the view minimal.
+    """
 
-    def put(self, request, pk, format=None):
-        # 更新指定 id 的 Song 实例
-        try:
-            song = Song.objects.get(pk=pk)
-        except Song.DoesNotExist:
-            return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
-        serializer = SongSerializer(song, data=request.data)
-        if serializer.is_valid():
-            serializer.save()  # 更新操作
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    serializer_class = SongSerializer
+    queryset = Song.objects.all()
+    filter_backends = [filters.SearchFilter]
+    search_fields = ["title", "artist", "school"]  # maps to ?search=
 
-    def delete(self, request, pk, format=None):
-        # Delete the Song instance with the specified id.
-        try:
-            song = Song.objects.get(pk=pk)
-        except Song.DoesNotExist:
-            return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
-        song.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+    pagination_class = None  # ← disables pagination per requirement
 
 
 class UploadCSVView(APIView):
     def post(self, request, *args, **kwargs):
+        # 1. grab the uploaded file object from the multipart/form-data payload
         file_obj = request.FILES.get("csv_file")
         if not file_obj:
+            # 2. if no file was sent, bail out with 400
             return Response(
-                {"error": "No CSV file provided."}, status=status.HTTP_400_BAD_REQUEST
+                {"error": "No CSV file provided."},
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         try:
+            # 3. read ALL bytes and decode them into a Python str
+            #    – request.FILES gives you a Django InMemoryUploadedFile or TemporaryUploadedFile,
+            #      whose .read() returns raw bytes from the client’s upload.
             file_data = file_obj.read().decode("utf-8", errors="strict")
-            # use io.StringIO to wrap the string as a file object
-            # so that csv.reader can process it
+
+            # 4. wrap that raw string in StringIO, so csv.reader can do .readline(), iteration, etc.
+            #    – csv.reader expects an iterable of text lines (a “file‐like” object).
             csv_file = io.StringIO(file_data)
+
+            # 5. hand it to the CSV parser
             csv_reader = csv.reader(csv_file)
 
-            # Convert csv_reader to an iterator to conveniently read the header row first.
+            # 6. pull off the first row as the header, so we can extract the genre
             csv_reader = iter(csv_reader)
             header_row = next(csv_reader, None)
             if not header_row:
                 return Response(
-                    {"error": "CSV file is empty."}, status=status.HTTP_400_BAD_REQUEST
+                    {"error": "CSV file is empty."},
+                    status=status.HTTP_400_BAD_REQUEST,
                 )
-
             genre = header_row[-1].strip()
 
-            # Define a set to store already seen songs to prevent duplicates
-            # (using the (title, artist) pair as a unique identifier).
+            # 7. loop over each remaining row, skip invalid ones, dedupe by (title,artist)
             seen_songs = set()
             songs_to_create = []
-
             for row in csv_reader:
-                # If the row has fewer than 2 columns, skip this row.
                 if len(row) < 2:
                     continue
-
                 track_name = row[0].strip().strip('"')
                 artist_name = row[1].strip().strip('"')
+                key = (track_name, artist_name)
+                if key in seen_songs:
+                    continue
+                seen_songs.add(key)
+                # 8. build Song instances in memory
+                songs_to_create.append(
+                    Song(title=track_name, artist=artist_name, school=genre)
+                )
 
-                # prevent duplicates
-                song_key = (track_name, artist_name)
-                if song_key in seen_songs:
-                    continue  # 此歌曲已存在，跳过
-                seen_songs.add(song_key)
-
-                # Create a Song object (not written to the database) and assign genre to the school field.
-                song = Song(title=track_name, artist=artist_name, school=genre)
-                songs_to_create.append(song)
-
+            # 9. if nothing valid was found, return 400
             if not songs_to_create:
                 return Response(
                     {"message": "There is no valid song data in the CSV file."},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
-            # Use database transactions to perform batch writes, ensuring data integrity.
+            # 10. atomically bulk‐insert them into the database
             with transaction.atomic():
                 Song.objects.bulk_create(songs_to_create)
 
+            # 11. success response with count and genre
             return Response(
                 {
                     "message": "CSV file processed successfully!",
@@ -130,5 +108,18 @@ class UploadCSVView(APIView):
             )
 
         except Exception as e:
-            # Catch the exception and return the error message.
+            # 12. catch any error (e.g. bad decode, CSV parse error) and return it
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class GenreRecommendationView(APIView):
+    """
+    Return the predefined song set for a fixed genre code.
+    """
+
+    def get(self, request, code, *args, **kwargs):
+        song_ids = GENRE_MAP.get(code)
+        if song_ids is None:
+            raise Http404("Unknown genre code.")
+        songs = Song.objects.filter(id__in=song_ids)
+        return Response(SongSerializer(songs, many=True).data)

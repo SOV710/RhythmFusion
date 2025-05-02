@@ -1,9 +1,13 @@
 # music/urls.py
 from django.urls import path
-from .views import SongListAPIView, SongDetailAPIView, UploadCSVView
+from .views import SongSearchView, UploadCSVView, GenreRecommendationView
 
 urlpatterns = [
-    path("", SongListAPIView.as_view(), name="song-list"),
-    path("<int:pk>/", SongDetailAPIView.as_view(), name="song-detail"),
-    path("csv/", UploadCSVView.as_view(), name="upload-csv"),
+    path("", SongSearchView.as_view(), name="song-search"),
+    path("csv/", UploadCSVView.as_view(), name="song-upload"),
+    path(
+        "genres/<str:code>/",
+        GenreRecommendationView.as_view(),
+        name="song-genre-recommend",
+    ),
 ]

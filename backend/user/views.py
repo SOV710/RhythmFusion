@@ -1,61 +1,76 @@
 # user/views.py
-
-from rest_framework.views import APIView
+from rest_framework import generics, permissions, status
 from rest_framework.response import Response
-from rest_framework import status
-from .serializers import UserSerializer
-from django.contrib.auth import get_user_model, authenticate, login
+from rest_framework.views import APIView
 
-User = get_user_model()
+from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.exceptions import TokenError
 
-
-class UserProfileAPIView(APIView):
-    def get(self, request, format=None):
-        serializer = UserSerializer(request.user)
-        return Response(serializer.data)
-
-    def put(self, request, format=None):
-        # 更新当前登录用户的信息，实例为 request.user
-        serializer = UserSerializer(request.user, data=request.data, partial=True)
-        if serializer.is_valid():
-            user = serializer.save()  # 调用 update() 方法更新用户
-            return Response(UserSerializer(user).data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+from .serializers import (
+    UserSerializer,
+    RegisterSerializer,
+    LoginSerializer,
+)
 
 
-class UserLoginAPIView(APIView):
-    def post(self, request, format=None):
-        username = request.data.get("username")
-        password = request.data.get("password")
+# ---------- Profile ----------
+class UserProfileAPIView(generics.RetrieveUpdateAPIView):
+    """
+    GET  /api/user/profile   -> 查看自己资料
+    PATCH/PUT 同 URL        -> 修改资料
+    """
 
-        # Confirm that user input username and password
-        if not username or not password:
+    serializer_class = UserSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_object(self):
+        # request.user 已由 JWTAuthentication 注入
+        return self.request.user
+
+
+# ---------- Register ----------
+class UserRegistrationAPIView(generics.CreateAPIView):
+    """
+    POST body: {username, email?, password}
+    """
+
+    serializer_class = RegisterSerializer
+    permission_classes = [permissions.AllowAny]
+
+
+# ---------- Login ----------
+class UserLoginAPIView(TokenObtainPairView):
+    """
+    ▶ POST /api/user/login
+    body: {username, password}
+    resp: {refresh, access}
+    """
+
+    serializer_class = LoginSerializer
+    permission_classes = [permissions.AllowAny]
+
+
+# ---------- Logout ----------
+class UserLogoutAPIView(APIView):
+    """
+    客户端携带 refresh token 调用即可将其拉黑：
+    POST body: {"refresh": "<refresh_token>"}
+    """
+
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        refresh_token = request.data.get("refresh")
+        if refresh_token is None:
             return Response(
-                {"error": "Give me your fucking USERNAME and PASSWORD"},
+                {"detail": "refresh token required"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # verify the user
-        user = authenticate(request, username=username, password=password)
-        if user is not None:
-            login(request, user)
-            serializer = UserSerializer(user)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        else:
-            return Response(
-                {"error": "Username or password is wrong"},
-                status=status.HTTP_401_UNAUTHORIZED,
-            )
-
-
-class UserRegistrationAPIView(APIView):
-    def post(self, request, format=None):
-        serializer = UserSerializer(data=request.data)
-        if serializer.is_valid():
-            user = serializer.save()
-            return Response(UserSerializer(user).data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-class UserLogoutAPIView(APIView):
-    pass
+        try:
+            token = RefreshToken(refresh_token)
+            token.blacklist()  # 需要 token_blacklist app
+            return Response(status=status.HTTP_205_RESET_CONTENT)
+        except TokenError as exc:
+            return Response({"detail": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
