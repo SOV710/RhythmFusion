@@ -1,51 +1,96 @@
 # playlist/views.py
-
-from rest_framework.views import APIView
+from django.shortcuts import get_object_or_404
+from rest_framework import generics, permissions, status
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework.views import APIView
+
 from .models import Playlist
 from .serializers import PlaylistSerializer
-from django.shortcuts import get_object_or_404
+from music.serializers import SongSerializer
+from music.models import Song
 
 
-class PlaylistListAPIView(APIView):
-    # The frontend can decide based on whether the returned playlists array is empty:
-    # if it's empty, display a box in the window with "create your playlist".
-    # if it's not empty, display all playlists normally and additionally show a "create your playlist" box below the list.
-    def get(self, request, format=None):
-        # 过滤出当前登录用户的歌单
-        playlists = Playlist.objects.filter(user=request.user)
-        serializer = PlaylistSerializer(playlists, many=True)
-        return Response(
-            {"playlists": serializer.data, "placeholder": "create your playlist"},
-            status=status.HTTP_200_OK,
-        )
+# ---------- POST /api/playlists/ ----------
+class PlaylistCreateView(generics.CreateAPIView):
+    """
+    创建歌单；请求体仅需 {"name": "..."}
+    """
 
-    def post(self, request, format=None):
-        # 创建新的歌单时，自动将当前登录用户作为创建者
-        serializer = PlaylistSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save(user=request.user)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    serializer_class = PlaylistSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def perform_create(self, serializer):
+        # 绑定当前登录用户为 owner
+        serializer.save(owner=self.request.user)
 
 
-class PlaylistDetailAPIView(APIView):
-    def get(self, request, pk, format=None):
-        playlist = get_object_or_404(Playlist, pk=pk, user=request.user)
-        serializer = PlaylistSerializer(playlist)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+# ---------- GET /api/playlists/{id}/ ----------
+class PlaylistDetailView(generics.RetrieveAPIView):
+    """
+    仅允许歌单所有者查看
+    """
 
-    def put(self, request, pk, format=None):
-        playlist = get_object_or_404(Playlist, pk=pk, user=request.user)
-        serializer = PlaylistSerializer(
-            playlist, data=request.data, partial=True)
-        if serializer.is_valid():
-            serializer.save()  # 更新歌单信息
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    serializer_class = PlaylistSerializer
+    permission_classes = [permissions.IsAuthenticated]
 
-    def delete(self, request, pk, format=None):
-        playlist = get_object_or_404(Playlist, pk=pk, user=request.user)
-        playlist.delete()
+    def get_queryset(self):
+        # 只能看到自己的歌单
+        return Playlist.objects.filter(owner=self.request.user)
+
+
+# ---------- GET | POST /api/playlists/{id}/tracks/ ----------
+class TrackListCreateView(APIView):
+    """
+    GET  → 列出歌单中的歌曲
+    POST → 向歌单添加歌曲  {"song_id": 123}
+    """
+
+    permission_classes = [permissions.IsAuthenticated]
+
+    def _get_playlist(self, request, pk):
+        return get_object_or_404(Playlist, pk=pk, owner=request.user)
+
+    def get(self, request, pk):
+        playlist = self._get_playlist(request, pk)
+        serializer = SongSerializer(playlist.songs.all(), many=True)
+        return Response(serializer.data)
+
+    def post(self, request, pk):
+        playlist = self._get_playlist(request, pk)
+        song_id = request.data.get("song_id")
+        if not song_id:
+            return Response(
+                {"detail": "song_id required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        song = get_object_or_404(Song, pk=song_id)
+        playlist.songs.add(song)
+        return Response({"detail": "song added"}, status=status.HTTP_201_CREATED)
+
+
+# ---------- DELETE /api/playlists/{id}/tracks/{song_id}/ ----------
+class TrackDeleteView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def delete(self, request, pk, song_id):
+        playlist = get_object_or_404(Playlist, pk=pk, owner=request.user)
+        song = get_object_or_404(Song, pk=song_id)
+        playlist.songs.remove(song)
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+# ---------- GET /api/playlists/{id}/recommendations/ ----------
+class PlaylistRecommendationView(APIView):
+    """
+    先留空，后续实现推荐逻辑
+    """
+
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, pk):
+        # TODO: 实际推荐代码
+        return Response(
+            {"detail": "Not implemented yet."},
+            status=status.HTTP_501_NOT_IMPLEMENTED,
+        )

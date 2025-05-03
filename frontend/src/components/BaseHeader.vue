@@ -1,13 +1,29 @@
 <script lang="ts" setup>
 import { isDark, toggleDark } from '~/composables'
 import { ElMessage } from 'element-plus'
+import api from '@/utils/axios'
 
 import { Moon, Sunny } from '@element-plus/icons-vue'
 
 const input = ref('')
 
-function handleSearch() {
-  ElMessage.info('Search Function is on developing……')
+async function handleSearch() {
+  const keyword = input.value.trim()
+  if (!keyword) {
+    ElMessage.warning('请输入关键字')
+    return
+  }
+
+  try {
+    // ④ GET /api/music/?search={keyword}
+    const { data } = await api.get('/api/music/', {
+      params: { search: keyword },
+    })
+
+    results.value = data
+  } catch {
+    /* 错误已在 axios 响应拦截器里弹窗，不需要重复处理 */
+  }
 }
 
 function handleSuggestion() {
@@ -32,11 +48,25 @@ function handleSuggestion() {
         size="large"
         class="p-2.5"
         @keydown.stop
+        @keydown.enter="handleSearch"
       />
     </div>
 
     <!--other item-->
     <el-menu-item @click="handleSearch"> Search </el-menu-item>
+
+    <el-dialog v-model="showDialog" title="Search Results" width="50%">
+      <!-- 用原生 ul/li 渲染结果 -->
+      <ul>
+        <li v-for="song in results" :key="song.id">{{ song.title }} — {{ song.artist }}</li>
+      </ul>
+
+      <!-- footer 插槽 -->
+      <template #footer>
+        <el-button @click="showDialog = false">关闭</el-button>
+      </template>
+    </el-dialog>
+
     <el-menu-item @click="handleSuggestion"> Suggest </el-menu-item>
 
     <el-menu-item h="full" @click="toggleDark()">

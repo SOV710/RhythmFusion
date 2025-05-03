@@ -19,11 +19,7 @@
             :on-success="handleAvatarSuccess"
             accept="image/*"
           >
-            <img
-              v-if="form.avatarUrl"
-              :src="form.avatarUrl"
-              class="avatar"
-            />
+            <img v-if="form.avatarUrl" :src="form.avatarUrl" class="avatar" />
             <i v-else class="el-icon-plus avatar-placeholder"></i>
           </el-upload>
         </el-form-item>
@@ -35,12 +31,7 @@
 
         <!-- 保存按钮 -->
         <el-form-item>
-          <el-button
-            type="primary"
-            @click="saveProfile"
-            :loading="loading"
-            class="w-full"
-          >
+          <el-button type="primary" @click="saveProfile" :loading="loading" class="w-full">
             保存
           </el-button>
         </el-form-item>
