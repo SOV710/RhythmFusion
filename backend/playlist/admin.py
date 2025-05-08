@@ -6,6 +6,6 @@ from .models import Playlist
 
 @admin.register(Playlist)
 class PlaylistAdmin(admin.ModelAdmin):
-    list_display = ("name", "user")
+    list_display = ("name", "owner")
     search_fields = ("name", "user__username")
-    list_filter = ("user",)
+    list_filter = ("owner",)

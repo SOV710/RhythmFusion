@@ -1,9 +1,26 @@
+// src/stores/user.ts
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
 import { login, register, fetchProfile, updateProfile } from '@/api/auth'
 import type { User, RegisterPayload, LoginPayload } from '@/api/auth'
 
 export const useUserStore = defineStore('user', () => {
+  state: () => ({
+    accessToken: '' as string,
+    refreshToken: '' as string
+  })
+
+  actions: {
+    setTokens(access: string, refresh: string) {
+      this.accessToken = access
+      this.refreshToken = refresh
+    },
+
+    clear() {
+      this.accessToken = ''
+      this.refreshToken = ''
+    }
+  }
+
   const user = ref<User | null>(null)
   const isLoggedIn = computed(() => user.value !== null)
 
@@ -29,7 +46,7 @@ export const useUserStore = defineStore('user', () => {
   }
 
   async function logout() {
-    await api.post('/user/logout/') // 你若没有 logout 接口，可直接 skip
+    await api.post('/user/logout/')
     user.value = null
   }
 

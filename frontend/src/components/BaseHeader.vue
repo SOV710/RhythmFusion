@@ -9,21 +9,14 @@ const input = ref('')
 
 async function handleSearch() {
   const keyword = input.value.trim()
-  if (!keyword) {
-    ElMessage.warning('请输入关键字')
-    return
-  }
-
   try {
-    // ④ GET /api/music/?search={keyword}
+    // GET /api/music/?search={keyword}
     const { data } = await api.get('/api/music/', {
       params: { search: keyword },
     })
 
     results.value = data
-  } catch {
-    /* 错误已在 axios 响应拦截器里弹窗，不需要重复处理 */
-  }
+  } catch {}
 }
 
 function handleSuggestion() {

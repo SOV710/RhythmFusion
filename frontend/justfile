@@ -1,4 +1,4 @@
-# Default task: when running 'just' without arguments, execute the 'dev' task.
+# Default task: when running 'just' without arguments, execute the 'run' task.
 default: run
 
 # Run the development server (using 'vite').

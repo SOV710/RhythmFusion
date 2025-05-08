@@ -62,29 +62,94 @@ paths:
         '200':
           description: No response body
   /api/playlist/:
+    post:
+      operationId: playlist_create
+      description: '创建歌单；请求体仅需 {"name": "..."}'
+      tags:
+      - playlist
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Playlist'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Playlist'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Playlist'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Playlist'
+          description: ''
+  /api/playlist/{id}/:
     get:
       operationId: playlist_retrieve
+      description: 仅允许歌单所有者查看
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
       tags:
       - playlist
       security:
       - jwtAuth: []
-      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Playlist'
+          description: ''
+  /api/playlist/{id}/recommendations/:
+    get:
+      operationId: playlist_recommendations_retrieve
+      description: 先留空，后续实现推荐逻辑
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - playlist
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/playlist/{id}/tracks/:
+    get:
+      operationId: playlist_tracks_retrieve
+      description: |-
+        GET  → 列出歌单中的歌曲
+        POST → 向歌单添加歌曲  {"song_id": 123}
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - playlist
+      security:
+      - jwtAuth: []
       responses:
         '200':
           description: No response body
     post:
-      operationId: playlist_create
-      tags:
-      - playlist
-      security:
-      - jwtAuth: []
-      - {}
-      responses:
-        '200':
-          description: No response body
-  /api/playlist/{id}/:
-    get:
-      operationId: playlist_retrieve_2
+      operationId: playlist_tracks_create
+      description: |-
+        GET  → 列出歌单中的歌曲
+        POST → 向歌单添加歌曲  {"song_id": 123}
       parameters:
       - in: path
         name: id
@@ -95,31 +160,20 @@ paths:
       - playlist
       security:
       - jwtAuth: []
-      - {}
       responses:
         '200':
           description: No response body
-    put:
-      operationId: playlist_update
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: integer
-        required: true
-      tags:
-      - playlist
-      security:
-      - jwtAuth: []
-      - {}
-      responses:
-        '200':
-          description: No response body
+  /api/playlist/{id}/tracks/{song_id}/:
     delete:
-      operationId: playlist_destroy
+      operationId: playlist_tracks_destroy
       parameters:
       - in: path
         name: id
+        schema:
+          type: integer
+        required: true
+      - in: path
+        name: song_id
         schema:
           type: integer
         required: true
@@ -127,7 +181,6 @@ paths:
       - playlist
       security:
       - jwtAuth: []
-      - {}
       responses:
         '204':
           description: No response body
@@ -246,6 +299,35 @@ paths:
               schema:
                 $ref: '#/components/schemas/User'
           description: ''
+  /api/user/refresh/:
+    post:
+      operationId: user_refresh_create
+      description: |-
+        Takes a refresh type JSON web token and returns an access type JSON web
+        token if the refresh token is valid.
+      tags:
+      - user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+        required: true
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenRefresh'
+          description: ''
   /api/user/register/:
     post:
       operationId: user_register_create
@@ -273,6 +355,35 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Register'
+          description: ''
+  /api/user/verify/:
+    post:
+      operationId: user_verify_create
+      description: |-
+        Takes a token and indicates if it is valid.  This view provides no
+        information about a token's fitness for a particular use.
+      tags:
+      - user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenVerify'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenVerify'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenVerify'
+        required: true
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenVerify'
           description: ''
 components:
   schemas:
@@ -340,6 +451,34 @@ components:
           format: date-time
           readOnly: true
           description: 更新时间
+    Playlist:
+      type: object
+      description: |-
+        用于创建 / 查看歌单基本信息（不嵌入歌曲列表，
+        歌曲详情接口由 /tracks/ 单独承担）
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          description: 歌单名称
+          maxLength: 255
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+          description: 创建时间
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+          description: 更新时间
+      required:
+      - created_at
+      - id
+      - name
+      - updated_at
     Register:
       type: object
       description: POST /api/user/register
@@ -381,6 +520,26 @@ components:
       - artist
       - id
       - title
+    TokenRefresh:
+      type: object
+      properties:
+        access:
+          type: string
+          readOnly: true
+        refresh:
+          type: string
+          writeOnly: true
+      required:
+      - access
+      - refresh
+    TokenVerify:
+      type: object
+      properties:
+        token:
+          type: string
+          writeOnly: true
+      required:
+      - token
     User:
       type: object
       description: 公共资料字段；用于 profile GET / PATCH。
