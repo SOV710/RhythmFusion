@@ -8,3 +8,9 @@ class SongSerializer(serializers.ModelSerializer):
     class Meta:
         model = Song
         fields = ["id", "title", "artist", "school"]
+
+
+class SongUploadSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Song
+        fields = ["title", "artist", "school"]
