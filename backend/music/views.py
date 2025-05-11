@@ -7,6 +7,7 @@ from django.http import Http404
 
 from .models import Song
 from .serializers import SongSerializer, SongUploadSerializer
+from .pagination import StandardResultsSetPagination
 
 GENRE_MAP = {
     "pop": [1, 2, 3],
@@ -27,7 +28,7 @@ class SongSearchView(generics.ListAPIView):
     filter_backends = [filters.SearchFilter]
     search_fields = ["title", "artist", "school"]  # maps to ?search=
 
-    pagination_class = None  # ← disables pagination per requirement
+    pagination_class = StandardResultsSetPagination
 
 
 class UploadView(APIView):
