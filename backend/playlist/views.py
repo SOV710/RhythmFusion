@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .models import Playlist
-from .serializers import PlaylistSerializer
+from .serializers import PlaylistSerializer, PlaylistSummarySerializer
 from music.serializers import SongSerializer
 from music.models import Song
 
@@ -22,6 +22,19 @@ class PlaylistCreateView(generics.CreateAPIView):
     def perform_create(self, serializer):
         # 绑定当前登录用户为 owner
         serializer.save(owner=self.request.user)
+
+
+class PlaylistListView(generics.ListAPIView):
+    """
+    GET /api/playlists/list/
+    列出当前用户所有歌单的 id 和 name
+    """
+
+    serializer_class = PlaylistSummarySerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return Playlist.objects.filter(owner=self.request.user)
 
 
 # ---------- GET /api/playlists/{id}/ ----------
@@ -57,16 +70,17 @@ class TrackListCreateView(APIView):
 
     def post(self, request, pk):
         playlist = self._get_playlist(request, pk)
-        song_id = request.data.get("song_id")
-        if not song_id:
-            return Response(
-                {"detail": "song_id required"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+        ids = request.data.get("song_ids") or request.data.get("song_id")
+        if not ids:
+            return Response({"detail": "song_ids required"}, status=400)
 
-        song = get_object_or_404(Song, pk=song_id)
-        playlist.songs.add(song)
-        return Response({"detail": "song added"}, status=status.HTTP_201_CREATED)
+        # 兼容单个和列表两种写法
+        if not isinstance(ids, list):
+            ids = [ids]
+
+        songs = Song.objects.filter(id__in=ids)
+        playlist.songs.add(*songs)
+        return Response({"detail": "songs added"}, status=201)
 
 
 # ---------- DELETE /api/playlists/{id}/tracks/{song_id}/ ----------
