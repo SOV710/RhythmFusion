@@ -9,7 +9,7 @@ SEARCH_KEYWORD="love"
 GENRE_CODE="rock"
 NEW_PROFILE_NAME="Test User Updated"
 
-echo "1. ==> Logging in..."
+echo "==> Logging in..."
 loginResp=$(curl -s -X POST -H "Content-Type: application/json" \
   -d "{\"username\":\"${USERNAME}\",\"password\":\"${PASSWORD}\"}" \
   "$API_HOST/api/user/login/")

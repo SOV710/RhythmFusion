@@ -1,11 +1,12 @@
 # music/views.py
-from rest_framework import generics, status, filters
+from django.shortcuts import get_object_or_404
+from rest_framework import generics, status, filters, permissions
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
 from django.http import Http404
 
-from .models import Song
+from .models import Song, SongLike
 from .serializers import SongSerializer, SongUploadSerializer
 from .pagination import StandardResultsSetPagination
 
@@ -76,3 +77,23 @@ class GenreRecommendationView(APIView):
             raise Http404("Unknown genre code.")
         songs = Song.objects.filter(id__in=song_ids)
         return Response(SongSerializer(songs, many=True).data)
+
+
+class SongLikeToggleView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, song_id):
+        song = get_object_or_404(Song, pk=song_id)
+        like, created = SongLike.objects.get_or_create(user=request.user, song=song)
+        if created:
+            return Response({"detail": "liked"}, status=status.HTTP_201_CREATED)
+        return Response({"detail": "already liked"}, status=status.HTTP_200_OK)
+
+    def delete(self, request, song_id):
+        song = get_object_or_404(Song, pk=song_id)
+        deleted, _ = SongLike.objects.filter(user=request.user, song=song).delete()
+        if deleted:
+            return Response({"detail": "unliked"}, status=status.HTTP_204_NO_CONTENT)
+        return Response(
+            {"detail": "not liked before"}, status=status.HTTP_400_BAD_REQUEST
+        )
