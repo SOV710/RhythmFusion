@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     "user",
     "music",
     "playlist",
+    "recommender",
 ]
 
 MIDDLEWARE = [
