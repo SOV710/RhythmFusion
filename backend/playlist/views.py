@@ -1,13 +1,37 @@
 # playlist/views.py
+import os
+import numpy as np
+import faiss
+
 from django.shortcuts import get_object_or_404
+from django.conf import settings
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .models import Playlist
 from .serializers import PlaylistSerializer, PlaylistSummarySerializer
+
 from music.serializers import SongSerializer
 from music.models import Song
+from recommender.models import SongVector
+
+
+DATA_DIR = os.path.join(settings.BASE_DIR, "recommender", "data")
+INDEX_PATH = os.path.join(DATA_DIR, "song_hybrid.index")
+MAP_PATH = os.path.join(DATA_DIR, "song_id_map.npy")
+
+
+_index = None
+_song_map = None
+
+
+def _load_index():
+    global _index, _song_map
+    if _index is None:
+        _index = faiss.read_index(INDEX_PATH)
+        _song_map = np.load(MAP_PATH)
+    return _index, _song_map
 
 
 # ---------- POST /api/playlists/ ----------
@@ -102,9 +126,34 @@ class PlaylistRecommendationView(APIView):
 
     permission_classes = [permissions.IsAuthenticated]
 
-    def get(self, request, pk):
-        # TODO: 实际推荐代码
-        return Response(
-            {"detail": "Not implemented yet."},
-            status=status.HTTP_501_NOT_IMPLEMENTED,
-        )
+
+def get(self, request, pk):
+    # 1. 取出歌单中所有 song_id
+    playlist = get_object_or_404(Playlist, pk=pk, owner=request.user)
+    song_ids = list(playlist.songs.values_list("id", flat=True))
+    if not song_ids:
+        return Response([], status=status.HTTP_200_OK)
+
+    # 2. 拉 hybrid_vector 并平均
+    vecs = []
+    for sid in song_ids:
+        sv = SongVector.objects.filter(song_id=sid).first()
+        if sv and sv.hybrid_vector:
+            vecs.append(sv.hybrid_vector)
+    if not vecs:
+        return Response([], status=status.HTTP_200_OK)
+
+    arr = np.array(vecs, dtype=np.float32)
+    faiss.normalize_L2(arr)
+    query = arr.mean(axis=0, keepdims=True)
+    faiss.normalize_L2(query)
+
+    # 3. 检索 Top-10
+    index, song_map = _load_index()
+    D, I = index.search(query, 10)
+    rec_ids = song_map[I[0]].tolist()
+
+    # 4. 拿具体 Song 并序列化
+    songs = Song.objects.filter(id__in=rec_ids)
+    serializer = SongSerializer(songs, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
