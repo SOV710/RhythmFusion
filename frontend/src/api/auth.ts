@@ -44,3 +44,10 @@ export function updateProfile(data: FormData) {
     headers: { 'Content-Type': 'multipart/form-data' },
   })
 }
+
+export default {
+  login: (payload: {username: string, password: string}) =>
+    api.post('/user/login/', payload),
+  register: (payload: {username: string, email: string, password: string}) =>
+    api.post('/user/register/', payload),
+}

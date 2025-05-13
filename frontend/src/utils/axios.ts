@@ -3,8 +3,6 @@ import type { AxiosResponse } from 'axios'
 import Cookies from 'js-cookie'
 import { ElMessage } from 'element-plus'
 
-import './tokenManager'
-
 // more detailed error response check
 interface ErrorResponse {
   detail?: string

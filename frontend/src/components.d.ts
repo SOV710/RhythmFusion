@@ -8,6 +8,8 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    AppHeader: typeof import('./components/AppHeader.vue')['default']
+    AppSidebar: typeof import('./components/AppSidebar.vue')['default']
     BaseHeader: typeof import('./components/BaseHeader.vue')['default']
     BaseMain: typeof import('./components/BaseMain.vue')['default']
     BaseSide: typeof import('./components/BaseSide.vue')['default']
@@ -37,8 +39,12 @@ declare module 'vue' {
     ElSwitch: typeof import('element-plus/es')['ElSwitch']
     ElTag: typeof import('element-plus/es')['ElTag']
     ElUpload: typeof import('element-plus/es')['ElUpload']
+    LoginDialog: typeof import('./components/LoginDialog.vue')['default']
     MessageBoxDemo: typeof import('./components/popups/MessageBoxDemo.vue')['default']
+    PlaylistCreateDialog: typeof import('./components/PlaylistCreateDialog.vue')['default']
+    PlaylistDetailDialog: typeof import('./components/PlaylistDetailDialog.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
+    SignupDialog: typeof import('./components/SignupDialog.vue')['default']
   }
 }

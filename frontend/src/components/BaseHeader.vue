@@ -2,22 +2,19 @@
 import { isDark, toggleDark } from '~/composables'
 import { ElMessage } from 'element-plus'
 import api from '@/utils/axios'
+import LoginDialog from '@/components/LoginDialog.vue'
+import SignupDialog from '@/components/SignupDialog.vue'
 
 import { Moon, Sunny } from '@element-plus/icons-vue'
 
+const userStore = useUserStore()
+const playlistStore = usePlaylistStore()
+
+// 登录/注册对话框控制
+const showLogin = ref(false)
+const showSignup = ref(false)
+
 const input = ref('')
-const upload = ref<UploadInstance>()
-
-const handleExceed: UploadProps['onExceed'] = (files) => {
-  upload.value!.clearFiles()
-  const file = files[0] as UploadRawFile
-  file.uid = genFileId()
-  upload.value!.handleStart(file)
-}
-
-const submitUpload = () => {
-  upload.value!.submit()
-}
 
 async function handleSearch() {
   const keyword = input.value.trim()
@@ -33,6 +30,13 @@ async function handleSearch() {
 
 function handleSuggestion() {
   ElMessage.info('Suggestion Function is on developing……')
+}
+
+function handleLogout() {
+  api.post('/user/logout/').then(() => {
+    userStore.logout()
+    playlistStore.playlists = []
+  })
 }
 </script>
 
@@ -84,13 +88,25 @@ function handleSuggestion() {
       </el-button>
     </el-menu-item>
 
+  <div class="ml-auto flex items-center gap-4">
+    <template v-if="!userStore.isLoggedIn">
+        <el-button type="text" @click="showLogin = true">Log in</el-button>
+        <el-button type="text" @click="showSignup = true">Sign up</el-button>
+      </template>
+      <template v-else>
     <!-- Submenu -->
     <el-sub-menu index="/user">
-      <template #title> <el-avatar src="@/assets/avatar/default.png" /> </template>
+      <template #title> <el-avatar :src="userStore.profile?.avatar || '/avatar/default.png'" /> </template>
       <el-menu-item index="/user/profile"> profile </el-menu-item>
       <el-menu-item> logout </el-menu-item>
     </el-sub-menu>
+      </template>
+  </div>
   </el-menu>
+
+  <LoginDialog v-model:visible="showLogin" />
+  <SignupDialog v-model:visible="showSignup" />
+
 </template>
 
 <style lang="scss">
