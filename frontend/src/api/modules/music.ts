@@ -39,13 +39,20 @@ export function searchSongs(keyword: string, page: number = 1): Promise<Paginate
     })
 }
 
-// 根据流派推荐 - 公开接口，不需要鉴权
+// 根据风格推荐 - 公开接口，不需要鉴权
 export function recommendByGenre(code: string): Promise<Song[]> {
   return client
     .get<Song[]>(`/api/music/genres/${code}/`, {
       skipAuth: true     // 推荐接口是公开的，跳过 auth 拦截
     })
-    .then((res) => res.data)
+    .then((res) => {
+      console.log('Genre recommendations response:', res.data)
+      return res.data
+    })
+    .catch(err => {
+      console.error('Failed to fetch genre recommendations:', err)
+      return []
+    })
 }
 
 // 喜欢歌曲 - 需要鉴权

@@ -5,15 +5,36 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 
 from django.http import Http404
+from django.db.models import Q
+import random
 
 from .models import Song, SongLike
 from .serializers import SongSerializer, SongUploadSerializer
 from .pagination import StandardResultsSetPagination
 
+# 可用的流派列表，直接对应数据库中的值
+AVAILABLE_GENRES = [
+    "jpop", "blues", "classical", "country", "dance", 
+    "electronic", "folk", "hiphop", "jazz", "kpop", 
+    "metal", "pop", "punk", "rnb", "rock"
+]
+
 GENRE_MAP = {
-    "pop": [1, 2, 3],
-    "rock": [4, 5],
-    "jazz": [6, 7, 8],
+    "pop": "流行",
+    "rock": "摇滚",
+    "jazz": "爵士",
+    "classical": "古典",
+    "hiphop": "嘻哈",
+    "electronic": "电子",
+    "folk": "民谣",
+    "country": "乡村",
+    "blues": "蓝调",
+    "metal": "金属",
+    "jpop": "日本流行",
+    "kpop": "韩国流行",
+    "rnb": "R&B",
+    "punk": "朋克",
+    "dance": "舞曲",
 }
 
 
@@ -68,15 +89,44 @@ class UploadView(APIView):
 
 class GenreRecommendationView(APIView):
     """
-    Return the predefined song set for a fixed genre code.
+    Return a list of songs for a specified genre.
     """
-
     def get(self, request, code, *args, **kwargs):
-        song_ids = GENRE_MAP.get(code)
-        if song_ids is None:
-            raise Http404("Unknown genre code.")
-        songs = Song.objects.filter(id__in=song_ids)
-        return Response(SongSerializer(songs, many=True).data)
+        # 确保流派代码是小写的
+        genre_code = code.lower()
+        
+        # 检查是否是支持的流派
+        if genre_code not in AVAILABLE_GENRES:
+            # 如果没有找到匹配的流派，返回404
+            return Response(
+                {"detail": f"未找到流派: {code}"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+            
+        # 构建精确匹配查询
+        query = Q(school__iexact=genre_code)
+        
+        # 查询匹配的歌曲
+        matching_songs = Song.objects.filter(query)
+        
+        # 如果没有找到匹配的歌曲，返回空列表
+        if not matching_songs.exists():
+            return Response([])
+            
+        # 随机选择最多10首歌曲
+        count = min(matching_songs.count(), 10)
+        if count < matching_songs.count():
+            # 获取所有ID，然后随机选择
+            all_ids = list(matching_songs.values_list('id', flat=True))
+            random_ids = random.sample(all_ids, count)
+            result_songs = Song.objects.filter(id__in=random_ids)
+        else:
+            # 如果歌曲数量少于10，直接使用所有匹配的歌曲
+            result_songs = matching_songs
+            
+        # 序列化并返回结果
+        serializer = SongSerializer(result_songs, many=True)
+        return Response(serializer.data)
 
 
 class SongLikeToggleView(APIView):

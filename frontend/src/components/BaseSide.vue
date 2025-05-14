@@ -5,6 +5,7 @@ import { useMusicStore } from '@/stores/music'
 import { ElMessageBox, ElMessage } from 'element-plus'
 import { ref, computed, onMounted, watch, nextTick } from 'vue'
 import client from '@/api/client'
+import { Plus, Headset } from '@element-plus/icons-vue'
 
 import type { Song, PaginatedResponse } from '@/api/modules/music'
 
@@ -501,16 +502,47 @@ function handleRecommendationSelectionChange(selection: Song[]) {
 
       <!-- 已有歌单时显示歌单列表 -->
       <template v-else>
-        <el-menu router>
-          <el-menu-item
-            v-for="playlist in playlists"
-            :key="playlist.id"
+        <div class="playlist-grid p-4">
+          <!-- 现有歌单卡片 -->
+          <el-card 
+            v-for="playlist in playlists" 
+            :key="playlist.id" 
+            shadow="hover" 
+            class="playlist-card mb-4 transition-all duration-300 hover:shadow-lg hover:transform hover:scale-[1.02]"
             @click="openDetail(playlist.id)"
           >
-            {{ playlist.name }}
-          </el-menu-item>
-          <el-menu-item @click="handlePlaylistCreate">+ 创建新歌单</el-menu-item>
-        </el-menu>
+            <div class="card-content">
+              <div class="playlist-icon">
+                <el-icon class="text-2xl"><Headset /></el-icon>
+              </div>
+              <div class="playlist-info">
+                <h3 class="playlist-name">{{ playlist.name }}</h3>
+                <p class="playlist-count text-sm text-gray-500">
+                  {{ (playlistStore.playlistTracks[playlist.id] || []).length }} 首歌曲
+                </p>
+              </div>
+            </div>
+          </el-card>
+          
+          <!-- 创建新歌单卡片 -->
+          <el-card 
+            shadow="hover" 
+            class="playlist-card create-playlist-card mb-4 transition-all duration-300 hover:shadow-lg hover:transform hover:scale-[1.02]"
+            @click="handlePlaylistCreate"
+          >
+            <div class="card-content">
+              <div class="playlist-icon">
+                <el-icon class="text-2xl"><Plus /></el-icon>
+              </div>
+              <div class="playlist-info">
+                <h3 class="playlist-name">创建新歌单</h3>
+                <p class="playlist-count text-sm text-gray-500">
+                  添加你喜欢的音乐
+                </p>
+              </div>
+            </div>
+          </el-card>
+        </div>
       </template>
     </el-scrollbar>
   </el-aside>
@@ -704,5 +736,74 @@ function handleRecommendationSelectionChange(selection: Song[]) {
 <style scoped lang="scss">
 :deep(.selected-row) {
   background-color: rgba(64, 158, 255, 0.1);
+}
+
+.playlist-grid {
+  display: flex;
+  flex-direction: column;
+}
+
+.playlist-card {
+  border-radius: 10px;
+  overflow: hidden;
+  cursor: pointer;
+  
+  .card-content {
+    display: flex;
+    align-items: center;
+    padding: 8px;
+  }
+  
+  .playlist-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    background-color: var(--el-color-primary-light-9);
+    color: var(--el-color-primary);
+    margin-right: 12px;
+  }
+  
+  .playlist-info {
+    flex: 1;
+  }
+  
+  .playlist-name {
+    font-weight: 600;
+    margin: 0;
+    margin-bottom: 4px;
+    font-size: 15px;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  &.create-playlist-card {
+    border: 2px dashed var(--el-border-color);
+    
+    .playlist-icon {
+      background-color: var(--el-color-success-light-9);
+      color: var(--el-color-success);
+    }
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  .playlist-card {
+    .playlist-icon {
+      background-color: rgba(64, 158, 255, 0.1);
+    }
+    
+    &.create-playlist-card {
+      border-color: #333;
+      
+      .playlist-icon {
+        background-color: rgba(103, 194, 58, 0.1);
+      }
+    }
+  }
 }
 </style>

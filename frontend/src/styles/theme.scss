@@ -1,0 +1,129 @@
+// src/styles/theme.scss - Global theme variables and mixins
+
+// Custom color palette
+:root {
+  --rf-primary: #4a86e8;
+  --rf-primary-light: #6ca1f1;
+  --rf-primary-dark: #3b6fbe;
+  --rf-secondary: #6c2dc7;
+  --rf-secondary-light: #8a4dd0;
+  --rf-secondary-dark: #5523a0;
+  
+  --rf-success: #67c23a;
+  --rf-warning: #e6a23c;
+  --rf-danger: #f56c6c;
+  --rf-info: #909399;
+  
+  --rf-bg-light: #f8f9fa;
+  --rf-bg-dark: #121212;
+  --rf-card-bg-light: #ffffff;
+  --rf-card-bg-dark: #1e1e1e;
+  
+  --rf-text-primary-light: #303133;
+  --rf-text-secondary-light: #606266;
+  --rf-text-primary-dark: #e0e0e0;
+  --rf-text-secondary-dark: #a0a0a0;
+  
+  --rf-border-color-light: #dcdfe6;
+  --rf-border-color-dark: #363636;
+  
+  --rf-transition-normal: 0.3s ease;
+  --rf-transition-fast: 0.15s ease;
+  
+  --rf-shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
+  --rf-shadow-md: 0 4px 8px rgba(0, 0, 0, 0.1);
+  --rf-shadow-lg: 0 10px 20px rgba(0, 0, 0, 0.15);
+  
+  --rf-border-radius-sm: 4px;
+  --rf-border-radius-md: 8px;
+  --rf-border-radius-lg: 16px;
+  --rf-border-radius-xl: 24px;
+  --rf-border-radius-full: 9999px;
+}
+
+// Common mixins
+@mixin rf-card {
+  border-radius: var(--rf-border-radius-md);
+  overflow: hidden;
+  background-color: var(--rf-card-bg-light);
+  box-shadow: var(--rf-shadow-sm);
+  transition: box-shadow var(--rf-transition-normal), transform var(--rf-transition-normal);
+  
+  &:hover {
+    box-shadow: var(--rf-shadow-md);
+  }
+  
+  @media (prefers-color-scheme: dark) {
+    background-color: var(--rf-card-bg-dark);
+  }
+}
+
+@mixin rf-elevated-element {
+  border-radius: var(--rf-border-radius-md);
+  background-color: var(--rf-card-bg-light);
+  box-shadow: var(--rf-shadow-sm);
+  transition: all var(--rf-transition-normal);
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--rf-shadow-md);
+  }
+  
+  @media (prefers-color-scheme: dark) {
+    background-color: var(--rf-card-bg-dark);
+  }
+}
+
+@mixin rf-gradient-bg {
+  background: linear-gradient(135deg, var(--rf-primary-light), var(--rf-secondary));
+  
+  @media (prefers-color-scheme: dark) {
+    background: linear-gradient(135deg, var(--rf-primary-dark), var(--rf-secondary-dark));
+  }
+}
+
+@mixin rf-text-gradient {
+  background: linear-gradient(to right, var(--rf-primary), var(--rf-secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-fill-color: transparent;
+}
+
+@mixin rf-smooth-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: var(--rf-primary-light) transparent;
+  
+  &::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background-color: var(--rf-primary-light);
+    border-radius: var(--rf-border-radius-full);
+  }
+}
+
+// Media queries
+@mixin mobile {
+  @media (max-width: 640px) {
+    @content;
+  }
+}
+
+@mixin tablet {
+  @media (min-width: 641px) and (max-width: 1024px) {
+    @content;
+  }
+}
+
+@mixin desktop {
+  @media (min-width: 1025px) {
+    @content;
+  }
+} 

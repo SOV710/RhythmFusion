@@ -2,9 +2,12 @@
   <el-main
     class="m-0 p-0 bg-gradient-to-b dark:from-[#212121] dark:to-[#121212] min-h-screen from-[#f2f2f2] to-[#e5e5e5]"
   >
-    <div class="container mx-auto p-4">
-      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
-        <h1 class="text-2xl font-bold mb-6 dark:text-white">我喜欢的歌曲</h1>
+    <div class="container mx-auto p-4 flex-1">
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 md:p-6 max-w-[90%] md:max-w-5xl mx-auto">
+        <h1 class="text-2xl font-bold mb-6 dark:text-white flex items-center">
+          <i class="el-icon-heart mr-2"></i>
+          我喜欢的歌曲
+        </h1>
 
         <!-- 加载状态 -->
         <div v-if="loading" class="py-8 text-center">
@@ -18,34 +21,36 @@
         </div>
 
         <!-- 歌曲列表 -->
-        <el-table
-          v-else
-          :data="likedSongs"
-          style="width: 100%"
-          row-key="id"
-          highlight-current-row
-          stripe
-        >
-          <el-table-column type="index" width="30" />
-          <el-table-column prop="title" label="歌曲名" min-width="150" />
-          <el-table-column prop="artist" label="歌手" min-width="120" />
-          <el-table-column prop="school" label="风格" width="100" />
-          <el-table-column label="操作" width="100" fixed="right">
-            <template #default="{ row }">
-              <div class="flex space-x-2">
-                <!-- 取消喜欢按钮 -->
-                <el-button
-                  type="danger"
-                  circle
-                  size="small"
-                  :icon="Delete"
-                  :loading="isProcessing(row.id)"
-                  @click="handleUnlike(row)"
-                />
-              </div>
-            </template>
-          </el-table-column>
-        </el-table>
+        <div v-else class="overflow-x-auto">
+          <el-table
+            :data="likedSongs"
+            style="width: 100%"
+            row-key="id"
+            highlight-current-row
+            stripe
+            class="song-table"
+          >
+            <el-table-column type="index" width="30" />
+            <el-table-column prop="title" label="歌曲名" min-width="150" show-overflow-tooltip />
+            <el-table-column prop="artist" label="歌手" min-width="120" show-overflow-tooltip />
+            <el-table-column prop="school" label="风格" width="100" show-overflow-tooltip />
+            <el-table-column label="操作" width="100" fixed="right">
+              <template #default="{ row }">
+                <div class="flex space-x-2 justify-center">
+                  <!-- 取消喜欢按钮 -->
+                  <el-button
+                    type="danger"
+                    circle
+                    size="small"
+                    :icon="Delete"
+                    :loading="isProcessing(row.id)"
+                    @click="handleUnlike(row)"
+                  />
+                </div>
+              </template>
+            </el-table-column>
+          </el-table>
+        </div>
       </div>
     </div>
   </el-main>
@@ -115,5 +120,22 @@ function goToSearch() {
 </script>
 
 <style scoped>
-/* 可以在这里添加自定义样式 */
+.song-table {
+  --el-table-border-color: var(--el-border-color-lighter);
+  --el-table-header-bg-color: var(--el-fill-color-light);
+  --el-table-row-hover-bg-color: var(--el-fill-color);
+  --el-table-header-text-color: var(--el-text-color-secondary);
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  .song-table :deep(th),
+  .song-table :deep(td) {
+    padding: 8px 6px;
+  }
+
+  .song-table :deep(.el-button--small) {
+    padding: 6px;
+  }
+}
 </style>

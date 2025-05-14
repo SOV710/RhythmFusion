@@ -2,17 +2,15 @@
   <el-main
     class="m-0 p-0 bg-gradient-to-b dark:from-[#212121] dark:to-[#121212] min-h-screen from-[#f2f2f2] to-[#e5e5e5]"
   >
-    <div class="container mx-auto p-4">
-      <el-form
-        :model="form"
-        ref="formRef"
-        label-width="120px"
-        class="max-w-md mx-auto bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg"
-      >
-        <h2 class="text-2xl font-bold mb-6 text-center dark:text-white">个人资料</h2>
+    <div class="container mx-auto p-4 flex flex-col items-center">
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 max-w-xl w-full">
+        <div class="text-center mb-8">
+          <h2 class="text-2xl font-bold mb-2 dark:text-white">个人资料</h2>
+          <div class="w-16 h-1 bg-blue-500 mx-auto rounded-full"></div>
+        </div>
 
-        <!-- 头像上传 -->
-        <el-form-item label="头像">
+        <!-- 头像上传 - 单独为头像创建一个区域 -->
+        <div class="flex justify-center mb-8">
           <el-upload
             class="avatar-uploader"
             :action="`/api/user/profile/`"
@@ -25,60 +23,70 @@
             name="avatar"
             accept="image/*"
           >
-            <img v-if="form.avatar" :src="form.avatar" class="avatar" />
-            <el-icon v-else class="avatar-placeholder">
-              <Plus />
-            </el-icon>
+            <div class="avatar-container">
+              <img v-if="form.avatar" :src="form.avatar" class="avatar" />
+              <el-icon v-else class="avatar-placeholder">
+                <Plus />
+              </el-icon>
+              <div class="avatar-hover-text">更换头像</div>
+            </div>
           </el-upload>
-        </el-form-item>
+        </div>
 
-        <!-- 用户名输入 -->
-        <el-form-item label="用户名" prop="username">
-          <el-input v-model="form.username" placeholder="请输入用户名" />
-        </el-form-item>
+        <el-form
+          :model="form"
+          ref="formRef"
+          label-width="100px"
+          class="profile-form"
+        >
+          <!-- 用户名输入 -->
+          <el-form-item label="用户名" prop="username">
+            <el-input v-model="form.username" placeholder="请输入用户名" />
+          </el-form-item>
 
-        <!-- 姓名 -->
-        <el-form-item label="姓名" prop="first_name">
-          <div class="flex gap-2">
-            <el-input v-model="form.first_name" placeholder="名" />
-            <el-input v-model="form.last_name" placeholder="姓" />
-          </div>
-        </el-form-item>
+          <!-- 姓名 -->
+          <el-form-item label="姓名" prop="first_name">
+            <div class="grid grid-cols-2 gap-4">
+              <el-input v-model="form.first_name" placeholder="名" />
+              <el-input v-model="form.last_name" placeholder="姓" />
+            </div>
+          </el-form-item>
 
-        <!-- 邮箱 -->
-        <el-form-item label="邮箱" prop="email">
-          <el-input v-model="form.email" placeholder="请输入邮箱" />
-        </el-form-item>
+          <!-- 邮箱 -->
+          <el-form-item label="邮箱" prop="email">
+            <el-input v-model="form.email" placeholder="请输入邮箱" />
+          </el-form-item>
 
-        <!-- 个人简介 -->
-        <el-form-item label="个人简介" prop="bio">
-          <el-input
-            v-model="form.bio"
-            type="textarea"
-            :rows="3"
-            placeholder="请输入个人简介"
-          />
-        </el-form-item>
+          <!-- 个人简介 -->
+          <el-form-item label="个人简介" prop="bio">
+            <el-input
+              v-model="form.bio"
+              type="textarea"
+              :rows="3"
+              placeholder="请输入个人简介"
+            />
+          </el-form-item>
 
-        <!-- 出生日期 -->
-        <el-form-item label="出生日期" prop="birth_date">
-          <el-date-picker
-            v-model="form.birth_date"
-            type="date"
-            placeholder="选择日期"
-            format="YYYY-MM-DD"
-            value-format="YYYY-MM-DD"
-            style="width: 100%"
-          />
-        </el-form-item>
+          <!-- 出生日期 -->
+          <el-form-item label="出生日期" prop="birth_date">
+            <el-date-picker
+              v-model="form.birth_date"
+              type="date"
+              placeholder="选择日期"
+              format="YYYY-MM-DD"
+              value-format="YYYY-MM-DD"
+              style="width: 100%"
+            />
+          </el-form-item>
 
-        <!-- 保存按钮 -->
-        <el-form-item>
-          <el-button type="primary" @click="saveProfile" :loading="loading" class="w-full">
-            保存
-          </el-button>
-        </el-form-item>
-      </el-form>
+          <!-- 保存按钮 -->
+          <el-form-item>
+            <el-button type="primary" @click="saveProfile" :loading="loading" class="w-full">
+              保存个人资料
+            </el-button>
+          </el-form-item>
+        </el-form>
+      </div>
     </div>
   </el-main>
 </template>
@@ -212,27 +220,94 @@ onMounted(async () => {
 </script>
 
 <style scoped lang="scss">
+.profile-form {
+  max-width: 100%;
+}
+
 .avatar-uploader {
   display: block;
   text-align: center;
   
+  .avatar-container {
+    position: relative;
+    display: inline-block;
+    border-radius: 50%;
+    overflow: hidden;
+    transition: all 0.3s;
+    width: 120px;
+    height: 120px;
+    
+    &:hover {
+      cursor: pointer;
+      .avatar-hover-text {
+        opacity: 1;
+      }
+      &::after {
+        opacity: 0.7;
+      }
+    }
+    
+    &::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.4);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    
+    .avatar-hover-text {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: white;
+      z-index: 10;
+      opacity: 0;
+      transition: opacity 0.3s;
+      font-size: 14px;
+      text-align: center;
+      width: 100%;
+    }
+  }
+
   .avatar-placeholder {
     font-size: 28px;
     color: #8c939d;
-    width: 100px;
-    height: 100px;
-    line-height: 100px;
+    width: 120px;
+    height: 120px;
+    line-height: 120px;
     border: 2px dashed #d9d9d9;
     border-radius: 50%;
     display: inline-block;
+    background-color: #f5f7fa;
   }
 
   .avatar {
-    width: 100px;
-    height: 100px;
+    width: 120px;
+    height: 120px;
     border-radius: 50%;
     object-fit: cover;
     display: inline-block;
+  }
+}
+
+// Responsive adaptations
+@media (max-width: 640px) {
+  .profile-form {
+    .el-form-item__label {
+      float: none;
+      display: block;
+      text-align: left;
+      padding: 0 0 10px;
+    }
+    
+    .el-form-item__content {
+      margin-left: 0 !important;
+    }
   }
 }
 </style>
