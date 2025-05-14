@@ -1,11 +1,14 @@
 <script lang="ts" setup>
-import { isDark, toggleDark } from '~/composables'
+import { isDark, toggleDark } from '@/composables'
 import { ElMessage } from 'element-plus'
-import api from '@/utils/axios'
-import LoginDialog from '@/components/LoginDialog.vue'
-import SignupDialog from '@/components/SignupDialog.vue'
+import client from '@/api/client'
+import { useUserStore } from '@/stores/user'
+import { usePlaylistStore } from '@/stores/playlist'
+import { searchSongs } from '@/api/modules/music'
 
 import { Moon, Sunny } from '@element-plus/icons-vue'
+
+import type { Song } from '@/api/modules/music'
 
 const userStore = useUserStore()
 const playlistStore = usePlaylistStore()
@@ -14,29 +17,47 @@ const playlistStore = usePlaylistStore()
 const showLogin = ref(false)
 const showSignup = ref(false)
 
+// 搜索逻辑控制
 const input = ref('')
+const results = ref<Song[]>([])
+const showDialog = ref(false)
 
 async function handleSearch() {
   const keyword = input.value.trim()
+  if (!keyword) {
+    results.value = []
+    return
+  }
   try {
-    // GET /api/music/?search={keyword}
-    const { data } = await api.get('/api/music/', {
-      params: { search: keyword },
-    })
+    // 调用 api 模块里已经设置了 skipAuth 的搜索接口
+    results.value = await searchSongs(keyword)
+  } catch (err) {
+    ElMessage.error('搜索出错：' + String(err))
+  }
+}
 
-    results.value = data
-  } catch {}
+function handleLogin() {
+  showLogin.value = true
+}
+
+function handleRegister() {
+  showSignup.value = true
 }
 
 function handleSuggestion() {
-  ElMessage.info('Suggestion Function is on developing……')
+  ElMessage.info('推荐功能正在开发中...')
 }
 
 function handleLogout() {
-  api.post('/user/logout/').then(() => {
-    userStore.logout()
-    playlistStore.playlists = []
-  })
+  client.post('/user/logout/')
+    .then(() => {
+      userStore.clearTokens()
+      playlistStore.playlists = {}
+      ElMessage.success('已成功退出登录')
+    })
+    .catch((err) => {
+      ElMessage.error('退出登录失败：' + String(err))
+    })
 }
 </script>
 
@@ -89,18 +110,18 @@ function handleLogout() {
     </el-menu-item>
 
     <div class="ml-auto flex items-center gap-4">
-      <template v-if="!userStore.isLoggedIn">
-        <el-button type="text" @click="showLogin = true">Log in</el-button>
-        <el-button type="text" @click="showSignup = true">Sign up</el-button>
+      <template v-if="!userStore.isAuthenticated">
+        <el-button type="text" @click="handleLogin">Log in</el-button>
+        <el-button type="text" @click="handleRegister">Sign up</el-button>
       </template>
       <template v-else>
         <!-- Submenu -->
         <el-sub-menu index="/user">
           <template #title>
-            <el-avatar :src="userStore.profile?.avatar || '/avatar/default.png'" />
+            <el-avatar src="/avatar/default.png" />
           </template>
           <el-menu-item index="/user/profile"> profile </el-menu-item>
-          <el-menu-item> logout </el-menu-item>
+          <el-menu-item @click="handleLogout"> logout </el-menu-item>
         </el-sub-menu>
       </template>
     </div>

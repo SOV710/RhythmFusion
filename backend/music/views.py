@@ -97,3 +97,19 @@ class SongLikeToggleView(APIView):
         return Response(
             {"detail": "not liked before"}, status=status.HTTP_400_BAD_REQUEST
         )
+
+
+class UserLikedSongsView(APIView):
+    """
+    Return all songs that the current user has liked.
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        # 获取用户喜欢的所有SongLike对象
+        liked_song_ids = SongLike.objects.filter(user=request.user).values_list('song_id', flat=True)
+        # 获取对应的Song对象
+        songs = Song.objects.filter(id__in=liked_song_ids)
+        # 序列化并返回结果
+        serializer = SongSerializer(songs, many=True)
+        return Response(serializer.data)

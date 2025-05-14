@@ -8,21 +8,49 @@ export interface Song {
   // … 如有其它字段
 }
 
-// 搜索歌曲
-export function searchSongs(keyword: string): Promise<Song[]> {
-  return client.get<Song[]>('/api/music/', { params: { search: keyword } }).then((res) => res.data)
+export interface SongLike {
+  song: number
+  created_at: string
 }
 
-// 批量导入 CSV（multipart/form-data）
-export function importCsvSongs(formData: FormData): Promise<void> {
+// 搜索歌曲
+export function searchSongs(keyword: string): Promise<Song[]> {
   return client
-    .post('/api/music/csv/', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
+    .get<Song[]>('/api/music/', {
+      params: { search: keyword },
+      skipAuth: true,    // ← 在这里跳过 auth 拦截
     })
-    .then(() => {})
+    .then(res => res.data)
 }
 
 // 根据流派推荐
 export function recommendByGenre(code: string): Promise<Song[]> {
-  return client.get<Song[]>(`/api/music/genres/${code}/`).then((res) => res.data)
+  return client
+    .get<Song[]>(`/api/music/genres/${code}/`, {
+      params: {
+        skipAuth: true,
+      }
+    })
+    .then((res) => res.data)
+}
+
+// 喜欢歌曲
+export function likeSong(songId: number): Promise<{ detail: string }> {
+  return client
+    .post<{ detail: string }>(`/api/music/${songId}/like/`)
+    .then(res => res.data)
+}
+
+// 取消喜欢歌曲
+export function unlikeSong(songId: number): Promise<{ detail: string }> {
+  return client
+    .delete<{ detail: string }>(`/api/music/${songId}/like/`)
+    .then(res => res.data)
+}
+
+// 获取用户喜欢的歌曲列表
+export function getLikedSongs(): Promise<Song[]> {
+  return client
+    .get<Song[]>('/api/music/likes/')
+    .then(res => res.data)
 }
