@@ -4,7 +4,7 @@ import { ElMessage } from 'element-plus'
 import { useUserStore } from '@/stores/user'
 import { usePlaylistStore } from '@/stores/playlist'
 import { useMusicStore } from '@/stores/music'
-import { searchSongs } from '@/api/modules/music'
+import client from '@/api/client'
 import { ref, computed, onMounted } from 'vue'
 import axios from 'axios'
 
@@ -69,22 +69,35 @@ async function handleSearch() {
   loading.value = true
   
   try {
-    // 调用 api 模块里已经设置了 skipAuth 的搜索接口
-    const response = await searchSongs(keyword)
-    console.log('搜索结果:', response)
+    console.log(`搜索关键词: ${keyword}`)
     
-    // 更新分页数据
-    total.value = response.count
-    results.value = response.results
-    nextPageUrl.value = response.next
-    prevPageUrl.value = response.previous
-    hasNextPage.value = !!response.next
-    hasPrevPage.value = !!response.previous
+    // 直接使用client发送请求，不再使用searchSongs函数
+    const response = await client.get<PaginatedResponse<Song>>('/api/music/', {
+      params: { search: keyword },
+      skipAuth: true // 搜索是公开API
+    })
     
-    showDialog.value = true
+    console.log('搜索结果:', response.data)
+    
+    if (response.data && response.data.results) {
+      // 更新分页数据
+      total.value = response.data.count || 0
+      results.value = response.data.results || []
+      nextPageUrl.value = response.data.next
+      prevPageUrl.value = response.data.previous
+      hasNextPage.value = !!response.data.next
+      hasPrevPage.value = !!response.data.previous
+      
+      showDialog.value = true
+    } else {
+      console.error('搜索响应数据格式不正确:', response.data)
+      ElMessage.error('获取搜索结果失败：响应格式不正确')
+      results.value = []
+    }
   } catch (err) {
     console.error('搜索错误:', err)
     ElMessage.error('搜索出错：' + String(err))
+    results.value = []
   } finally {
     loading.value = false
   }
@@ -92,37 +105,47 @@ async function handleSearch() {
 
 // 处理分页变化
 async function handlePageChange(page: number) {
-  loading.value = true
-  currentPage.value = page
+  if (loading.value) return;
+  
+  loading.value = true;
+  const oldPage = currentPage.value;
+  currentPage.value = page;
   
   try {
-    let url = null
-    if (page > currentPage.value && nextPageUrl.value) {
-      url = nextPageUrl.value
-    } else if (page < currentPage.value && prevPageUrl.value) {
-      url = prevPageUrl.value
+    console.log(`加载第${page}页数据，当前页: ${oldPage}, 是否有下一页: ${hasNextPage.value}, 是否有上一页: ${hasPrevPage.value}`);
+    
+    // 创建API请求
+    const params = { search: searchKeyword.value, page: page.toString() };
+    console.log('发送搜索请求，参数:', params);
+    
+    // 使用client而不是axios直接调用，确保一致性
+    const response = await client.get<PaginatedResponse<Song>>('/api/music/', { 
+      params,
+      skipAuth: true // 搜索接口不需要认证
+    });
+    
+    console.log('分页响应数据:', response.data);
+    
+    if (response.data && response.data.results) {
+      results.value = response.data.results || [];
+      nextPageUrl.value = response.data.next;
+      prevPageUrl.value = response.data.previous;
+      hasNextPage.value = !!response.data.next;
+      hasPrevPage.value = !!response.data.previous;
+      total.value = response.data.count || 0;
     } else {
-      // 构建URL，带上页码参数
-      url = `/api/music/?search=${encodeURIComponent(searchKeyword.value)}&page=${page}`
+      // 处理异常响应
+      console.error('搜索响应数据格式不正确:', response.data);
+      results.value = [];
+      ElMessage.error('获取搜索结果失败：响应格式不正确');
     }
-    
-    // 使用完整URL直接请求
-    const baseUrl = axios.defaults.baseURL || ''
-    const response = await axios.get<PaginatedResponse<Song>>(
-      url.startsWith('http') ? url : `${baseUrl}${url}`
-    )
-    
-    // 更新数据
-    results.value = response.data.results
-    nextPageUrl.value = response.data.next
-    prevPageUrl.value = response.data.previous
-    hasNextPage.value = !!response.data.next
-    hasPrevPage.value = !!response.data.previous
   } catch (error) {
-    console.error('分页加载失败:', error)
-    ElMessage.error('加载更多结果失败')
+    console.error('分页加载失败:', error);
+    // 恢复到上一页
+    currentPage.value = oldPage;
+    ElMessage.error('加载更多结果失败');
   } finally {
-    loading.value = false
+    loading.value = false;
   }
 }
 
@@ -288,11 +311,11 @@ async function addToSelectedPlaylists() {
 
   <!-- 搜索结果对话框 -->
   <el-dialog v-model="showDialog" title="搜索结果" width="60%" destroy-on-close>
-    <div v-if="results.length === 0 && !loading" class="text-center py-4">
+    <div v-if="!results || results.length === 0 && !loading" class="text-center py-4">
       <p>没有找到匹配的结果</p>
     </div>
     
-    <el-table v-else :data="results" style="width: 100%" v-loading="loading">
+    <el-table v-else-if="results && results.length > 0" :data="results" style="width: 100%" v-loading="loading">
       <el-table-column prop="title" label="歌曲名" />
       <el-table-column prop="artist" label="歌手" />
       <el-table-column prop="school" label="风格" width="120" />
@@ -323,8 +346,12 @@ async function addToSelectedPlaylists() {
       </el-table-column>
     </el-table>
     
+    <div v-else-if="loading" class="text-center py-4">
+      <p>正在加载，请稍候...</p>
+    </div>
+    
     <!-- 分页控件 -->
-    <div class="flex justify-center mt-4">
+    <div v-if="results && results.length > 0" class="flex justify-center mt-4">
       <el-pagination
         v-model:current-page="currentPage"
         :page-size="pageSize"
