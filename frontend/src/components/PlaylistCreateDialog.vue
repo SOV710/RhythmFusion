@@ -22,12 +22,15 @@ async function loadSongs() {
 }
 
 // 监听弹窗打开时加载
-watch(() => visible, v => v && loadSongs())
+watch(
+  () => visible,
+  (v) => v && loadSongs(),
+)
 
 function toggleSelection(id: number, checked: boolean) {
   const idx = playlistStore.selectedSongs.indexOf(id)
   if (checked && idx === -1) playlistStore.selectedSongs.push(id)
-  if (!checked && idx !== -1) playlistStore.selectedSongs.splice(idx,1)
+  if (!checked && idx !== -1) playlistStore.selectedSongs.splice(idx, 1)
 }
 
 async function create() {
@@ -43,13 +46,15 @@ async function create() {
         <el-input v-model="name" />
       </el-form-item>
       <el-form-item label="Search Songs">
-        <el-input v-model="keyword" @keyup.enter="loadSongs" clearable/>
+        <el-input v-model="keyword" @keyup.enter="loadSongs" clearable />
         <el-button @click="loadSongs">Search</el-button>
       </el-form-item>
     </el-form>
 
     <el-table :data="songs" v-loading="loading">
-      <el-table-column type="selection" width="55"
+      <el-table-column
+        type="selection"
+        width="55"
         :selectable="() => true"
         @select="toggleSelection"
         @select-all="toggleSelection"

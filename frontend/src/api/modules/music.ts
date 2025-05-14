@@ -10,9 +10,7 @@ export interface Song {
 
 // 搜索歌曲
 export function searchSongs(keyword: string): Promise<Song[]> {
-  return client
-    .get<Song[]>('/api/music/', { params: { search: keyword } })
-    .then(res => res.data)
+  return client.get<Song[]>('/api/music/', { params: { search: keyword } }).then((res) => res.data)
 }
 
 // 批量导入 CSV（multipart/form-data）
@@ -26,7 +24,5 @@ export function importCsvSongs(formData: FormData): Promise<void> {
 
 // 根据流派推荐
 export function recommendByGenre(code: string): Promise<Song[]> {
-  return client
-    .get<Song[]>(`/api/music/genres/${code}/`)
-    .then(res => res.data)
+  return client.get<Song[]>(`/api/music/genres/${code}/`).then((res) => res.data)
 }

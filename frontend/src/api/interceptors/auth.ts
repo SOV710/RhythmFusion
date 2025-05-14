@@ -15,6 +15,6 @@ export function setupAuthInterceptor(client: AxiosInstance) {
       }
       return config
     },
-    (error) => Promise.reject(error)
+    (error) => Promise.reject(error),
   )
 }

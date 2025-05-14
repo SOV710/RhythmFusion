@@ -88,25 +88,26 @@ function handleLogout() {
       </el-button>
     </el-menu-item>
 
-  <div class="ml-auto flex items-center gap-4">
-    <template v-if="!userStore.isLoggedIn">
+    <div class="ml-auto flex items-center gap-4">
+      <template v-if="!userStore.isLoggedIn">
         <el-button type="text" @click="showLogin = true">Log in</el-button>
         <el-button type="text" @click="showSignup = true">Sign up</el-button>
       </template>
       <template v-else>
-    <!-- Submenu -->
-    <el-sub-menu index="/user">
-      <template #title> <el-avatar :src="userStore.profile?.avatar || '/avatar/default.png'" /> </template>
-      <el-menu-item index="/user/profile"> profile </el-menu-item>
-      <el-menu-item> logout </el-menu-item>
-    </el-sub-menu>
+        <!-- Submenu -->
+        <el-sub-menu index="/user">
+          <template #title>
+            <el-avatar :src="userStore.profile?.avatar || '/avatar/default.png'" />
+          </template>
+          <el-menu-item index="/user/profile"> profile </el-menu-item>
+          <el-menu-item> logout </el-menu-item>
+        </el-sub-menu>
       </template>
-  </div>
+    </div>
   </el-menu>
 
   <LoginDialog v-model:visible="showLogin" />
   <SignupDialog v-model:visible="showSignup" />
-
 </template>
 
 <style lang="scss">

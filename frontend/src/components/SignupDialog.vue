@@ -14,7 +14,11 @@ const loading = ref(false)
 async function signup() {
   loading.value = true
   try {
-    await apiAuth.register({ username: username.value, email: email.value, password: password.value })
+    await apiAuth.register({
+      username: username.value,
+      email: email.value,
+      password: password.value,
+    })
     ElMessage.success('Signup successful, please login')
     emit('update:visible', false)
   } catch (err: unknown) {
@@ -44,4 +48,3 @@ async function signup() {
     </template>
   </el-dialog>
 </template>
-

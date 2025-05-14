@@ -17,6 +17,6 @@ export function setupErrorInterceptor(client: AxiosInstance) {
         // 可以根据需要处理其他 status
       }
       return Promise.reject(error)
-    }
+    },
   )
 }

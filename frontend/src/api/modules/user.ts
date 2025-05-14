@@ -46,8 +46,7 @@ export function updateProfile(data: FormData) {
 }
 
 export default {
-  login: (payload: {username: string, password: string}) =>
-    api.post('/user/login/', payload),
-  register: (payload: {username: string, email: string, password: string}) =>
+  login: (payload: { username: string; password: string }) => api.post('/user/login/', payload),
+  register: (payload: { username: string; email: string; password: string }) =>
     api.post('/user/register/', payload),
 }

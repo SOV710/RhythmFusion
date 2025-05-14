@@ -16,7 +16,7 @@ export const usePlaylistStore = defineStore('playlist', () => {
   // 初始化或刷新用户歌单列表
   function setPlaylists(list: Playlist[]) {
     playlists.value = {}
-    list.forEach(p => {
+    list.forEach((p) => {
       playlists.value[p.id] = p
     })
   }
