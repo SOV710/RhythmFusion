@@ -9,8 +9,8 @@ export const useUserStore = defineStore(
   'user',
   () => {
     // 初始从 localStorage 读取
-    const accessToken = ref<string>('')
-    const refreshToken = ref<string>('')
+    const accessToken = ref<string>(localStorage.getItem('access_token') || '')
+    const refreshToken = ref<string>(localStorage.getItem('refresh_token') || '')
 
     // 登录表单数据
     const loginForm = ref<LoginPayload>({
@@ -32,12 +32,30 @@ export const useUserStore = defineStore(
 
     // 设置并持久化 tokens
     function setTokens(access: string, refresh: string) {
+      if (!access || !refresh) {
+        console.error('尝试设置空的 token:', { access, refresh })
+        return
+      }
+      console.log('Setting tokens:', { access: access.substring(0, 10) + '...', refresh: refresh.substring(0, 10) + '...' })
+      
+      // 先设置 localStorage，因为拦截器依赖这个
+      localStorage.setItem('access_token', access)
+      localStorage.setItem('refresh_token', refresh)
+      
+      // 然后更新 store 状态
       accessToken.value = access
       refreshToken.value = refresh
     }
 
     // 清除 tokens
     function clearTokens() {
+      console.log('Clearing tokens')
+      
+      // 先清除 localStorage
+      localStorage.removeItem('access_token')
+      localStorage.removeItem('refresh_token')
+      
+      // 然后更新 store 状态
       accessToken.value = ''
       refreshToken.value = ''
     }
@@ -52,12 +70,19 @@ export const useUserStore = defineStore(
       loginLoading.value = true
       try {
         const { data } = await userApi.login(loginForm.value)
+        console.log('Login response:', data)
+        
+        if (!data.access || !data.refresh) {
+          throw new Error('服务器未返回有效的访问令牌')
+        }
+        
         setTokens(data.access, data.refresh)
         ElMessage.success('登录成功')
         // 重置表单
         resetLoginForm()
         return true
       } catch (error: any) {
+        console.error('Login error:', error)
         ElMessage.error('登录失败: ' + (error?.response?.data?.detail || '未知错误'))
         return false
       } finally {
@@ -89,14 +114,25 @@ export const useUserStore = defineStore(
 
     // 登出逻辑
     async function handleLogout() {
+      const currentRefreshToken = refreshToken.value || localStorage.getItem('refresh_token')
+      
+      if (!currentRefreshToken) {
+        ElMessage.warning('您已经退出登录')
+        clearTokens()
+        return true
+      }
+      
       try {
-        await userApi.logout()
+        await userApi.logout(currentRefreshToken)
         clearTokens()
         ElMessage.success('已成功退出登录')
         return true
       } catch (error) {
-        ElMessage.error('退出登录失败：' + String(error))
-        return false
+        console.error('Logout error:', error)
+        // 即使登出 API 调用失败，也要清除本地令牌
+        clearTokens()
+        ElMessage.warning('已清除本地登录状态')
+        return true
       }
     }
 

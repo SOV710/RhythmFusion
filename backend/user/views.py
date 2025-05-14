@@ -67,7 +67,7 @@ class UserLogoutAPIView(APIView):
     POST body: {"refresh": "<refresh_token>"}
     """
 
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.AllowAny]  # 允许未登录用户请求登出
 
     def post(self, request, *args, **kwargs):
         refresh_token = request.data.get("refresh")

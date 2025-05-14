@@ -38,9 +38,10 @@ export function login(data: LoginPayload) {
   return client.post<AuthResponse>('/api/user/login/', data)
 }
 
-// Logout
-export function logout() {
-  return client.post('/api/user/logout/')
+// Logout - No auth required, using skipAuth
+export function logout(refreshToken: string) {
+  console.log('Calling logout with refresh token:', refreshToken.substring(0, 10) + '...')
+  return client.post('/api/user/logout/', { refresh: refreshToken }, { skipAuth: true })
 }
 
 // Get profile

@@ -81,10 +81,17 @@ export const usePlaylistStore = defineStore('playlist', () => {
 
   // 初始化或刷新用户歌单列表
   function setPlaylists(list: Playlist[]) {
+    console.log('Setting playlists with data:', list)
     playlists.value = {}
-    list.forEach((p) => {
-      playlists.value[p.id] = p
-    })
+    
+    // 确保 list 是数组并且非空
+    if (Array.isArray(list) && list.length > 0) {
+      list.forEach((p) => {
+        playlists.value[p.id] = p
+      })
+    } else {
+      console.warn('setPlaylists called with empty or invalid data:', list)
+    }
   }
 
   // 设置某个歌单的曲目列表

@@ -17,7 +17,14 @@ export interface Track {
 
 // 获取用户的所有歌单
 export function getPlaylists(): Promise<Playlist[]> {
-  return client.get<Playlist[]>('/api/playlists/list/').then((res) => res.data)
+  return client
+    .get<Playlist[]>('/api/playlists/list/')
+    .then((res) => res.data)
+    .catch(err => {
+      console.error('Failed to fetch playlists:', err)
+      // Return empty array instead of throwing to prevent cascading errors
+      return []
+    })
 }
 
 // 创建歌单
