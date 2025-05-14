@@ -13,8 +13,9 @@ const userStore = useUserStore()
 const musicStore = useMusicStore()
 
 // 表格引用
-const songsTableRef = ref(null)
-const detailTableRef = ref(null)
+const songsTableRef = ref<any>(null)
+const detailTableRef = ref<any>(null)
+const recommendTableRef = ref<any>(null)
 
 // 是否已登录
 const isAuthenticated = computed(() => userStore.isAuthenticated)
@@ -22,6 +23,7 @@ const isAuthenticated = computed(() => userStore.isAuthenticated)
 // 对话框控制
 const playlistCreating = ref(false)
 const showDetail = ref(false)
+const showRecommendations = ref(false)
 const activePlaylistId = ref<number | null>(null)
 
 // 歌单列表
@@ -39,6 +41,11 @@ const createPlaylistName = ref('')
 const searchKeyword = ref('')
 const searchResults = ref<Song[]>([])
 const isLoadingSongs = ref(false)
+
+// 推荐相关
+const recommendationResults = ref<Song[]>([])
+const isLoadingRecommendations = ref(false)
+const newPlaylistFromRecommendName = ref('')
 
 // 分页数据 - 歌单创建
 const total = ref(0)
@@ -90,7 +97,7 @@ function handlePlaylistCreate() {
     ElMessage.warning('请先登录')
     return
   }
-  
+
   ElMessageBox.confirm('是否创建新歌单?', '创建歌单', {
     confirmButtonText: '确定',
     cancelButtonText: '取消',
@@ -116,9 +123,9 @@ async function loadSongs() {
       params: { search: searchKeyword.value },
       skipAuth: true
     })
-    
+
     console.log('搜索歌曲结果:', response.data)
-    
+
     if (response.data && response.data.results) {
       // 更新分页数据
       total.value = response.data.count || 0
@@ -127,12 +134,12 @@ async function loadSongs() {
       prevPageUrl.value = response.data.previous
       hasNextPage.value = !!response.data.next
       hasPrevPage.value = !!response.data.previous
-      
+
       // 保存已加载歌曲的ID以便跟踪选择状态
       response.data.results.forEach(song => {
         loadedSongIds.value.add(song.id)
       })
-      
+
       // 在下一个DOM更新周期后更新表格选中状态
       nextTick(() => {
         setTableSelection(songsTableRef.value)
@@ -153,7 +160,7 @@ async function loadSongs() {
 async function searchSongsForPlaylist() {
   currentPage.value = 1 // 重置到第一页
   await loadSongs()
-  
+
   // 更新表格选中状态
   nextTick(() => {
     setTableSelection(songsTableRef.value)
@@ -163,25 +170,25 @@ async function searchSongsForPlaylist() {
 // 处理分页变化
 async function handlePageChange(page: number) {
   if (isLoadingSongs.value) return
-  
+
   isLoadingSongs.value = true
   const oldPage = currentPage.value
   currentPage.value = page
-  
+
   try {
     console.log(`加载第${page}页数据，当前页: ${oldPage}, 是否有下一页: ${hasNextPage.value}, 是否有上一页: ${hasPrevPage.value}`)
-    
+
     // 创建API请求
     const params = { search: searchKeyword.value, page: page.toString() }
     console.log('发送搜索请求，参数:', params)
-    
-    const response = await client.get<PaginatedResponse<Song>>('/api/music/', { 
+
+    const response = await client.get<PaginatedResponse<Song>>('/api/music/', {
       params,
       skipAuth: true
     })
-    
+
     console.log('分页响应数据:', response.data)
-    
+
     if (response.data && response.data.results) {
       searchResults.value = response.data.results
       nextPageUrl.value = response.data.next
@@ -189,12 +196,12 @@ async function handlePageChange(page: number) {
       hasNextPage.value = !!response.data.next
       hasPrevPage.value = !!response.data.previous
       total.value = response.data.count || 0
-      
+
       // 保存已加载歌曲的ID以便跟踪选择状态
       response.data.results.forEach(song => {
         loadedSongIds.value.add(song.id)
       })
-      
+
       // 更新表格选中状态
       nextTick(() => {
         setTableSelection(songsTableRef.value)
@@ -222,15 +229,15 @@ async function searchSongsForDetail() {
       params: { search: detailSearchKeyword.value },
       skipAuth: true
     })
-    
+
     if (response.data && response.data.results) {
       searchResults.value = response.data.results
-      
+
       // 在下一个DOM更新周期后更新表格选中状态
       nextTick(() => {
         setTableSelection(detailTableRef.value)
       })
-      
+
       return response.data.results
     }
     return []
@@ -243,10 +250,10 @@ async function searchSongsForDetail() {
 // 处理表格选择变化
 function handleSelectionChange(selection: Song[]) {
   selectedRows.value = selection
-  
+
   // 对比当前页面选择与之前的缓冲区，处理差异
   const currentPageIds = new Set(selection.map(song => song.id))
-  
+
   searchResults.value.forEach(song => {
     // 如果在当前页面选中，但不在缓冲区中，则添加
     if (currentPageIds.has(song.id) && !musicStore.isSongInBuffer(song.id)) {
@@ -265,23 +272,23 @@ async function createPlaylist() {
     ElMessage.warning('请输入歌单名称')
     return
   }
-  
+
   const selectedCount = musicStore.getSelectedSongCount()
   if (selectedCount === 0) {
     ElMessage.warning('请至少选择一首歌曲')
     return
   }
-  
+
   try {
     // 先创建歌单
     const playlist = await playlistStore.createPlaylist(createPlaylistName.value)
-    
+
     // 然后添加选中的歌曲
     const selectedSongIds = musicStore.getSelectedSongIds()
     for (const songId of selectedSongIds) {
       await playlistStore.addTrackToPlaylist(playlist.id, songId)
     }
-    
+
     ElMessage.success(`歌单"${createPlaylistName.value}"创建成功，已添加${selectedCount}首歌曲`)
     playlistCreating.value = false
     createPlaylistName.value = ''
@@ -295,15 +302,15 @@ async function createPlaylist() {
 // 添加歌曲到歌单
 async function addTracksToPlaylist() {
   if (!activePlaylistId.value) return
-  
+
   try {
     // 使用music store的缓冲区中的歌曲ID
     const selectedSongIds = musicStore.getSelectedSongIds()
-    
+
     for (const songId of selectedSongIds) {
       await playlistStore.addTrackToPlaylist(activePlaylistId.value, songId)
     }
-    
+
     ElMessage.success(`已添加 ${selectedSongIds.length} 首歌曲到歌单`)
     addMode.value = false
     musicStore.clearSongBuffer() // 清空歌曲缓冲区
@@ -315,7 +322,7 @@ async function addTracksToPlaylist() {
 // 从歌单移除歌曲
 async function removeTrackFromPlaylist(songId: number) {
   if (!activePlaylistId.value) return
-  
+
   try {
     await playlistStore.deleteTrack(activePlaylistId.value, songId)
     ElMessage.success('已从歌单移除歌曲')
@@ -329,19 +336,81 @@ async function getRecommendations() {
   if (!activePlaylistId.value) return
   
   try {
-    const songs = await playlistStore.recommend(activePlaylistId.value)
-    searchResults.value = songs
-    addMode.value = true
+    isLoadingRecommendations.value = true
+    // 先清空歌曲缓冲区
+    musicStore.clearSongBuffer()
     
-    // 在下一个DOM更新周期后更新表格选中状态
+    const songs = await playlistStore.recommend(activePlaylistId.value)
+    recommendationResults.value = songs
+    showRecommendations.value = true
+    
+    // 在下一个DOM更新周期后初始化表格
     nextTick(() => {
-      setTableSelection(detailTableRef.value)
+      if (recommendTableRef.value) {
+        recommendTableRef.value.clearSelection()
+      }
     })
     
     return songs
   } catch (error) {
     ElMessage.error('获取推荐失败：' + String(error))
     return []
+  } finally {
+    isLoadingRecommendations.value = false
+  }
+}
+
+// 创建歌单并保存推荐的歌曲
+async function saveRecommendationsAsPlaylist() {
+  if (!newPlaylistFromRecommendName.value) {
+    ElMessage.warning('请输入歌单名称')
+    return
+  }
+  
+  if (recommendationResults.value.length === 0) {
+    ElMessage.warning('没有可保存的推荐歌曲')
+    return
+  }
+  
+  try {
+    // 创建新歌单
+    const playlist = await playlistStore.createPlaylist(newPlaylistFromRecommendName.value)
+    
+    // 添加所有推荐歌曲
+    for (const song of recommendationResults.value) {
+      await playlistStore.addTrackToPlaylist(playlist.id, song.id)
+    }
+    
+    ElMessage.success(`已将推荐歌曲保存到新歌单"${newPlaylistFromRecommendName.value}"`)
+    newPlaylistFromRecommendName.value = ''
+    showRecommendations.value = false
+  } catch (error) {
+    ElMessage.error('保存推荐歌曲失败：' + String(error))
+  }
+}
+
+// 将选中的推荐歌曲添加到当前歌单
+async function addSelectedRecommendationsToCurrentPlaylist() {
+  if (!activePlaylistId.value) return
+  
+  try {
+    // 使用music store的缓冲区中的歌曲ID
+    const selectedSongIds = musicStore.getSelectedSongIds()
+    
+    if (selectedSongIds.length === 0) {
+      ElMessage.warning('请至少选择一首歌曲')
+      return
+    }
+    
+    for (const songId of selectedSongIds) {
+      await playlistStore.addTrackToPlaylist(activePlaylistId.value, songId)
+    }
+    
+    ElMessage.success(`已添加 ${selectedSongIds.length} 首推荐歌曲到当前歌单`)
+    showRecommendations.value = false
+    musicStore.clearSongBuffer() // 清空歌曲缓冲区
+  } catch (error) {
+    ElMessage.error('添加歌曲失败：' + String(error))
   }
 }
 
@@ -359,14 +428,46 @@ function tableRowClassName({ row }: { row: Song }) {
 // 表格加载时设置已选中的歌曲
 function setTableSelection(tableRef: any) {
   if (!tableRef) return
-  
+
   // 清除当前表格选中
   tableRef.clearSelection()
-  
+
   // 设置缓冲区中已有的选中状态
   searchResults.value.forEach(row => {
     if (musicStore.isSongInBuffer(row.id)) {
       tableRef.toggleRowSelection(row, true)
+    }
+  })
+}
+
+// 设置推荐表格选中状态
+function setRecommendationTableSelection() {
+  if (!recommendTableRef.value) return
+  
+  // 清除当前表格选中
+  recommendTableRef.value.clearSelection()
+  
+  // 设置缓冲区中已有的选中状态
+  recommendationResults.value.forEach(row => {
+    if (musicStore.isSongInBuffer(row.id)) {
+      recommendTableRef.value.toggleRowSelection(row, true)
+    }
+  })
+}
+
+// 处理推荐表格选择变化
+function handleRecommendationSelectionChange(selection: Song[]) {
+  // 对比当前页面选择与之前的缓冲区，处理差异
+  const currentPageIds = new Set(selection.map(song => song.id))
+  
+  recommendationResults.value.forEach(song => {
+    // 如果在当前页面选中，但不在缓冲区中，则添加
+    if (currentPageIds.has(song.id) && !musicStore.isSongInBuffer(song.id)) {
+      musicStore.toggleSongInBuffer(song)
+    }
+    // 如果在缓冲区中，但不在当前页面选中，则移除
+    else if (!currentPageIds.has(song.id) && musicStore.isSongInBuffer(song.id)) {
+      musicStore.toggleSongInBuffer(song)
     }
   })
 }
@@ -396,7 +497,7 @@ function setTableSelection(tableRef: any) {
           </el-button>
         </el-card>
       </template>
-      
+
       <!-- 已有歌单时显示歌单列表 -->
       <template v-else>
         <el-menu router>
@@ -429,10 +530,10 @@ function setTableSelection(tableRef: any) {
       <p>没有找到匹配的结果</p>
     </div>
 
-    <el-table 
-      v-else-if="searchResults && searchResults.length > 0" 
-      :data="searchResults" 
-      v-loading="isLoadingSongs" 
+    <el-table
+      v-else-if="searchResults && searchResults.length > 0"
+      :data="searchResults"
+      v-loading="isLoadingSongs"
       @selection-change="handleSelectionChange"
       row-key="id"
       :row-class-name="tableRowClassName"
@@ -462,9 +563,9 @@ function setTableSelection(tableRef: any) {
 
     <template #footer>
       <el-button @click="playlistCreating = false">取消</el-button>
-      <el-button 
-        type="primary" 
-        @click="createPlaylist" 
+      <el-button
+        type="primary"
+        @click="createPlaylist"
         :disabled="!createPlaylistName || selectedSongCount === 0"
         :loading="isLoadingSongs"
       >
@@ -512,8 +613,8 @@ function setTableSelection(tableRef: any) {
         </el-input>
       </div>
 
-      <el-table 
-        :data="searchResults" 
+      <el-table
+        :data="searchResults"
         @selection-change="handleSelectionChange"
         row-key="id"
         :row-class-name="tableRowClassName"
@@ -529,6 +630,72 @@ function setTableSelection(tableRef: any) {
     <template #footer>
       <el-button @click="showDetail = false">关闭</el-button>
       <el-button v-if="addMode" type="primary" @click="addTracksToPlaylist">添加到歌单</el-button>
+    </template>
+  </el-dialog>
+
+  <!-- 推荐对话框 -->
+  <el-dialog v-model="showRecommendations" title="推荐歌曲" width="60%" destroy-on-close>
+    <template #header>
+      <div class="flex justify-between items-center w-full">
+        <span class="text-lg font-bold">推荐歌曲</span>
+      </div>
+    </template>
+
+    <div v-if="recommendationResults.length === 0 && !isLoadingRecommendations" class="text-center py-4">
+      <p>没有找到匹配的推荐歌曲</p>
+    </div>
+
+    <el-table
+      v-else-if="recommendationResults && recommendationResults.length > 0"
+      :data="recommendationResults"
+      @selection-change="handleRecommendationSelectionChange"
+      row-key="id"
+      :row-class-name="tableRowClassName"
+      ref="recommendTableRef"
+      v-loading="isLoadingRecommendations"
+    >
+      <el-table-column type="selection" />
+      <el-table-column prop="title" label="标题" />
+      <el-table-column prop="artist" label="歌手" />
+      <el-table-column prop="school" label="风格" width="120" />
+    </el-table>
+
+    <div class="mt-4">
+      <el-divider content-position="left">保存推荐歌曲</el-divider>
+      <el-form>
+        <el-form-item label="创建新歌单">
+          <div class="flex items-center gap-2">
+            <el-input 
+              v-model="newPlaylistFromRecommendName" 
+              placeholder="输入新歌单名称" 
+              class="flex-1"
+            />
+            <el-button 
+              type="primary" 
+              @click="saveRecommendationsAsPlaylist" 
+              :disabled="!newPlaylistFromRecommendName || recommendationResults.length === 0"
+            >
+              保存到新歌单
+            </el-button>
+          </div>
+        </el-form-item>
+        <el-form-item label="添加到当前歌单">
+          <el-button 
+            type="success" 
+            @click="addSelectedRecommendationsToCurrentPlaylist"
+            :disabled="musicStore.getSelectedSongCount() === 0"
+          >
+            添加选中歌曲到当前歌单
+          </el-button>
+          <span class="ml-2 text-gray-500" v-if="musicStore.getSelectedSongCount() > 0">
+            已选择 {{ musicStore.getSelectedSongCount() }} 首歌曲
+          </span>
+        </el-form-item>
+      </el-form>
+    </div>
+
+    <template #footer>
+      <el-button @click="showRecommendations = false">关闭</el-button>
     </template>
   </el-dialog>
 </template>
