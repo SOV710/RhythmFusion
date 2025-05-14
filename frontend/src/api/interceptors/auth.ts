@@ -1,9 +1,9 @@
 // src/api/interceptors/auth.ts
-import { AxiosInstance, AxiosRequestConfig } from 'axios'
+import type { AxiosInstance, InternalAxiosRequestConfig } from 'axios'
 
 export function setupAuthInterceptor(client: AxiosInstance) {
   client.interceptors.request.use(
-    (config: AxiosRequestConfig) => {
+    (config: InternalAxiosRequestConfig) => {
       if (config.skipAuth) {
         return config
       }

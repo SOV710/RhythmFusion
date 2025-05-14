@@ -1,6 +1,6 @@
 // src/api/modules/playlist.ts
 import client from '../client'
-import { Song } from './music' // 推荐接口也返回 Song
+import type { Song } from './music' // 推荐接口也返回 Song
 
 export interface Playlist {
   id: number
@@ -13,6 +13,11 @@ export interface Track {
   title: string
   artist: string
   // … 如有其它字段
+}
+
+// 获取用户的所有歌单
+export function getPlaylists(): Promise<Playlist[]> {
+  return client.get<Playlist[]>('/api/playlists/list/').then((res) => res.data)
 }
 
 // 创建歌单

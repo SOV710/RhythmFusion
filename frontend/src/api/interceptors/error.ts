@@ -1,5 +1,5 @@
 // src/api/interceptors/error.ts
-import { AxiosInstance, AxiosError } from 'axios'
+import type { AxiosInstance, AxiosError } from 'axios'
 // 如果你用 vue-router，可以在这里拿到 router 实例
 // import router from '@/router'
 

@@ -1,5 +1,5 @@
-// src/api/auth.ts
-import api from '@/utils/axios'
+// src/api/modules/user.ts
+import client from '@/api/client'
 
 export interface User {
   id: number
@@ -8,6 +8,11 @@ export interface User {
   bio?: string
   birth_date?: string
   avatar?: string
+}
+
+export interface AuthResponse {
+  access: string
+  refresh: string
 }
 
 export interface RegisterPayload {
@@ -25,28 +30,35 @@ export interface LoginPayload {
 
 // Register
 export function register(data: RegisterPayload) {
-  return api.post<User>('/user/register/', data)
+  return client.post<User>('/api/user/register/', data)
 }
 
 // Login
 export function login(data: LoginPayload) {
-  return api.post<User>('/user/login/', data)
+  return client.post<AuthResponse>('/api/user/login/', data)
+}
+
+// Logout
+export function logout() {
+  return client.post('/api/user/logout/')
 }
 
 // Get profile
 export function fetchProfile() {
-  return api.get<User>('/user/profile/')
+  return client.get<User>('/api/user/profile/')
 }
 
 // Update profile
 export function updateProfile(data: FormData) {
-  return api.put<User>('/user/profile/', data, {
+  return client.put<User>('/api/user/profile/', data, {
     headers: { 'Content-Type': 'multipart/form-data' },
   })
 }
 
 export default {
-  login: (payload: { username: string; password: string }) => api.post('/user/login/', payload),
-  register: (payload: { username: string; email: string; password: string }) =>
-    api.post('/user/register/', payload),
+  login,
+  register,
+  logout,
+  fetchProfile,
+  updateProfile
 }
