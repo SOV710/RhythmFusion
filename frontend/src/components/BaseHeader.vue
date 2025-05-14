@@ -7,6 +7,8 @@ import { useMusicStore } from '@/stores/music'
 import client from '@/api/client'
 import { ref, computed, onMounted } from 'vue'
 import axios from 'axios'
+import * as userApi from '@/api/modules/user'
+import * as musicApi from '@/api/modules/music'
 
 import { Moon, Sunny, Plus, Star, StarFilled } from '@element-plus/icons-vue'
 
@@ -50,12 +52,32 @@ const userPlaylists = computed(() => {
   return Object.values(playlistStore.playlists || {})
 })
 
+// 用户头像
+const userAvatar = ref<string | null>(null)
+
 // 初始化组件时，如果已经登录，加载用户数据
 onMounted(async () => {
   if (isAuthenticated.value) {
     await playlistStore.fetchPlaylists()
+    // 加载用户头像
+    fetchUserAvatar()
   }
 })
+
+// 获取用户头像
+async function fetchUserAvatar() {
+  try {
+    const { data } = await userApi.fetchProfile()
+    if (data && data.avatar) {
+      userAvatar.value = data.avatar
+    } else {
+      userAvatar.value = '/avatar/default.png'
+    }
+  } catch (error) {
+    console.error('获取用户头像失败:', error)
+    userAvatar.value = '/avatar/default.png'
+  }
+}
 
 async function handleSearch() {
   const keyword = input.value.trim()
@@ -63,34 +85,31 @@ async function handleSearch() {
     results.value = []
     return
   }
-  
+
   searchKeyword.value = keyword
   currentPage.value = 1
   loading.value = true
-  
+
   try {
     console.log(`搜索关键词: ${keyword}`)
+
+    // 使用musicApi模块的searchSongs函数
+    const response = await musicApi.searchSongs(keyword)
     
-    // 直接使用client发送请求，不再使用searchSongs函数
-    const response = await client.get<PaginatedResponse<Song>>('/api/music/', {
-      params: { search: keyword },
-      skipAuth: true // 搜索是公开API
-    })
-    
-    console.log('搜索结果:', response.data)
-    
-    if (response.data && response.data.results) {
+    console.log('搜索结果:', response)
+
+    if (response && response.results) {
       // 更新分页数据
-      total.value = response.data.count || 0
-      results.value = response.data.results || []
-      nextPageUrl.value = response.data.next
-      prevPageUrl.value = response.data.previous
-      hasNextPage.value = !!response.data.next
-      hasPrevPage.value = !!response.data.previous
-      
+      total.value = response.count || 0
+      results.value = response.results || []
+      nextPageUrl.value = response.next
+      prevPageUrl.value = response.previous
+      hasNextPage.value = !!response.next
+      hasPrevPage.value = !!response.previous
+
       showDialog.value = true
     } else {
-      console.error('搜索响应数据格式不正确:', response.data)
+      console.error('搜索响应数据格式不正确:', response)
       ElMessage.error('获取搜索结果失败：响应格式不正确')
       results.value = []
     }
@@ -106,36 +125,29 @@ async function handleSearch() {
 // 处理分页变化
 async function handlePageChange(page: number) {
   if (loading.value) return;
-  
+
   loading.value = true;
   const oldPage = currentPage.value;
   currentPage.value = page;
-  
+
   try {
     console.log(`加载第${page}页数据，当前页: ${oldPage}, 是否有下一页: ${hasNextPage.value}, 是否有上一页: ${hasPrevPage.value}`);
-    
-    // 创建API请求
-    const params = { search: searchKeyword.value, page: page.toString() };
-    console.log('发送搜索请求，参数:', params);
-    
-    // 使用client而不是axios直接调用，确保一致性
-    const response = await client.get<PaginatedResponse<Song>>('/api/music/', { 
-      params,
-      skipAuth: true // 搜索接口不需要认证
-    });
-    
-    console.log('分页响应数据:', response.data);
-    
-    if (response.data && response.data.results) {
-      results.value = response.data.results || [];
-      nextPageUrl.value = response.data.next;
-      prevPageUrl.value = response.data.previous;
-      hasNextPage.value = !!response.data.next;
-      hasPrevPage.value = !!response.data.previous;
-      total.value = response.data.count || 0;
+
+    // 使用musicApi模块的searchSongs函数，带上页码
+    const response = await musicApi.searchSongs(searchKeyword.value, page);
+
+    console.log('分页响应数据:', response);
+
+    if (response && response.results) {
+      results.value = response.results || [];
+      nextPageUrl.value = response.next;
+      prevPageUrl.value = response.previous;
+      hasNextPage.value = !!response.next;
+      hasPrevPage.value = !!response.previous;
+      total.value = response.count || 0;
     } else {
       // 处理异常响应
-      console.error('搜索响应数据格式不正确:', response.data);
+      console.error('搜索响应数据格式不正确:', response);
       results.value = [];
       ElMessage.error('获取搜索结果失败：响应格式不正确');
     }
@@ -170,32 +182,37 @@ async function handleLogout() {
   }
 }
 
+async function handleLoginSuccess() {
+  console.log('登录成功，获取用户数据')
+  
+  // 登录成功后立即获取用户数据
+  try {
+    const tokens = {
+      access: localStorage.getItem('access_token') || '',
+      refresh: localStorage.getItem('refresh_token') || ''
+    }
+    console.log('当前令牌状态:', {
+      hasAccess: !!tokens.access,
+      hasRefresh: !!tokens.refresh,
+      isAuthenticated: userStore.isAuthenticated
+    })
+
+    await playlistStore.fetchPlaylists()
+    await musicStore.fetchLikedSongs()
+    await fetchUserAvatar() // 获取用户头像
+    console.log('用户数据获取成功')
+  } catch (error) {
+    console.error('获取用户数据失败:', error)
+    ElMessage.error(`获取用户数据失败: ${error}`)
+  }
+}
+
 async function submitLogin() {
   console.log('提交登录表单')
   const success = await userStore.handleLogin()
   if (success) {
-    console.log('登录成功，获取用户数据')
     showLogin.value = false
-    
-    // 登录成功后立即获取用户数据
-    try {
-      const tokens = {
-        access: localStorage.getItem('access_token') || '',
-        refresh: localStorage.getItem('refresh_token') || ''
-      }
-      console.log('当前令牌状态:', { 
-        hasAccess: !!tokens.access,
-        hasRefresh: !!tokens.refresh,
-        isAuthenticated: userStore.isAuthenticated
-      })
-      
-      await playlistStore.fetchPlaylists()
-      await musicStore.fetchLikedSongs()
-      console.log('用户数据获取成功')
-    } catch (error) {
-      console.error('获取用户数据失败:', error)
-      ElMessage.error(`获取用户数据失败: ${error}`)
-    }
+    await handleLoginSuccess()
   }
 }
 
@@ -243,7 +260,7 @@ function togglePlaylistSelection(playlistId: number) {
 
 async function addToSelectedPlaylists() {
   if (!selectedSong.value) return
-  
+
   for (const playlistId of selectedPlaylists.value) {
     try {
       await playlistStore.addTrackToPlaylist(playlistId, selectedSong.value.id)
@@ -251,7 +268,7 @@ async function addToSelectedPlaylists() {
       ElMessage.error(`添加歌曲到歌单失败: ${error}`)
     }
   }
-  
+
   showPlaylistDialog.value = false
   ElMessage.success('已添加到选中的歌单')
 }
@@ -300,10 +317,11 @@ async function addToSelectedPlaylists() {
         <!-- Submenu -->
         <el-sub-menu index="/user">
           <template #title>
-            <el-avatar src="/avatar/default.png" />
+            <el-avatar :src="userAvatar || '/avatar/default.png'" />
           </template>
-          <el-menu-item index="/user/profile"> profile </el-menu-item>
-          <el-menu-item @click="handleLogout"> logout </el-menu-item>
+          <el-menu-item index="/user/profile"> 个人档案 </el-menu-item>
+          <el-menu-item index="/user/liked"> 收藏歌曲 </el-menu-item>
+          <el-menu-item @click="handleLogout"> 登出 </el-menu-item>
         </el-sub-menu>
       </template>
     </div>
@@ -314,7 +332,7 @@ async function addToSelectedPlaylists() {
     <div v-if="!results || results.length === 0 && !loading" class="text-center py-4">
       <p>没有找到匹配的结果</p>
     </div>
-    
+
     <el-table v-else-if="results && results.length > 0" :data="results" style="width: 100%" v-loading="loading">
       <el-table-column prop="title" label="歌曲名" />
       <el-table-column prop="artist" label="歌手" />
@@ -331,7 +349,7 @@ async function addToSelectedPlaylists() {
               :loading="isLoading(row.id)"
               @click="toggleLikeSong(row)"
             />
-            
+
             <!-- 添加到歌单按钮 -->
             <el-button
               type="success"
@@ -345,11 +363,11 @@ async function addToSelectedPlaylists() {
         </template>
       </el-table-column>
     </el-table>
-    
+
     <div v-else-if="loading" class="text-center py-4">
       <p>正在加载，请稍候...</p>
     </div>
-    
+
     <!-- 分页控件 -->
     <div v-if="results && results.length > 0" class="flex justify-center mt-4">
       <el-pagination
@@ -362,12 +380,12 @@ async function addToSelectedPlaylists() {
       />
     </div>
   </el-dialog>
-  
+
   <!-- 选择歌单对话框 -->
-  <el-dialog 
-    v-model="showPlaylistDialog" 
-    title="选择要添加到的歌单" 
-    width="50%" 
+  <el-dialog
+    v-model="showPlaylistDialog"
+    title="选择要添加到的歌单"
+    width="50%"
     append-to-body
   >
     <div v-if="userPlaylists.length > 0">
@@ -375,14 +393,14 @@ async function addToSelectedPlaylists() {
         <el-table-column prop="name" label="歌单名称" />
         <el-table-column label="操作" width="100">
           <template #default="{ row }">
-            <el-checkbox 
-              :model-value="isPlaylistSelected(row.id)" 
+            <el-checkbox
+              :model-value="isPlaylistSelected(row.id)"
               @change="togglePlaylistSelection(row.id)"
             />
           </template>
         </el-table-column>
       </el-table>
-      
+
       <div class="flex justify-end mt-4">
         <el-button @click="showPlaylistDialog = false">取消</el-button>
         <el-button type="primary" @click="addToSelectedPlaylists">确定添加</el-button>
@@ -400,19 +418,19 @@ async function addToSelectedPlaylists() {
   <el-dialog v-model="showLogin" title="登录" width="400px">
     <el-form :model="userStore.loginForm" label-width="80px">
       <el-form-item label="用户名">
-        <el-input 
-          v-model="userStore.loginForm.username" 
-          placeholder="请输入用户名" 
-          autocomplete="username" 
+        <el-input
+          v-model="userStore.loginForm.username"
+          placeholder="请输入用户名"
+          autocomplete="username"
         />
       </el-form-item>
       <el-form-item label="密码">
-        <el-input 
-          v-model="userStore.loginForm.password" 
-          type="password" 
-          placeholder="请输入密码" 
+        <el-input
+          v-model="userStore.loginForm.password"
+          type="password"
+          placeholder="请输入密码"
           autocomplete="current-password"
-          show-password 
+          show-password
         />
       </el-form-item>
     </el-form>
@@ -426,24 +444,24 @@ async function addToSelectedPlaylists() {
   <el-dialog v-model="showSignup" title="注册" width="400px">
     <el-form :model="userStore.registerForm" label-width="80px">
       <el-form-item label="用户名">
-        <el-input 
-          v-model="userStore.registerForm.username" 
-          placeholder="请输入用户名" 
+        <el-input
+          v-model="userStore.registerForm.username"
+          placeholder="请输入用户名"
         />
       </el-form-item>
       <el-form-item label="邮箱">
-        <el-input 
-          v-model="userStore.registerForm.email" 
-          type="email" 
-          placeholder="请输入邮箱" 
+        <el-input
+          v-model="userStore.registerForm.email"
+          type="email"
+          placeholder="请输入邮箱"
         />
       </el-form-item>
       <el-form-item label="密码">
-        <el-input 
-          v-model="userStore.registerForm.password" 
-          type="password" 
-          placeholder="请输入密码" 
-          show-password 
+        <el-input
+          v-model="userStore.registerForm.password"
+          type="password"
+          placeholder="请输入密码"
+          show-password
         />
       </el-form-item>
     </el-form>

@@ -113,3 +113,19 @@ class UserLikedSongsView(APIView):
         # 序列化并返回结果
         serializer = SongSerializer(songs, many=True)
         return Response(serializer.data)
+
+
+class LikedSongDeleteView(APIView):
+    """
+    Delete a specific liked song for the current user.
+    """
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def delete(self, request, song_id):
+        # 尝试找到用户喜欢的这首歌
+        try:
+            like = SongLike.objects.get(user=request.user, song_id=song_id)
+            like.delete()
+            return Response({"detail": "已从收藏列表中移除"}, status=status.HTTP_204_NO_CONTENT)
+        except SongLike.DoesNotExist:
+            return Response({"detail": "未找到此收藏歌曲"}, status=status.HTTP_404_NOT_FOUND)

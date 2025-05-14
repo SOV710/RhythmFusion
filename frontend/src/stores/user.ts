@@ -2,7 +2,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import * as userApi from '@/api/modules/user'
-import type { LoginPayload, RegisterPayload } from '@/api/modules/user'
+import type { LoginPayload, RegisterPayload, User } from '@/api/modules/user'
 import { ElMessage } from 'element-plus'
 
 export const useUserStore = defineStore(
@@ -11,6 +11,10 @@ export const useUserStore = defineStore(
     // 初始从 localStorage 读取
     const accessToken = ref<string>(localStorage.getItem('access_token') || '')
     const refreshToken = ref<string>(localStorage.getItem('refresh_token') || '')
+
+    // 用户资料
+    const profile = ref<User | null>(null)
+    const profileLoading = ref(false)
 
     // 登录表单数据
     const loginForm = ref<LoginPayload>({
@@ -136,6 +140,48 @@ export const useUserStore = defineStore(
       }
     }
 
+    // 获取用户资料
+    async function fetchProfile() {
+      if (!isAuthenticated.value) {
+        ElMessage.warning('请先登录')
+        return false
+      }
+
+      profileLoading.value = true
+      try {
+        const { data } = await userApi.fetchProfile()
+        profile.value = data
+        return true
+      } catch (error: any) {
+        console.error('获取用户资料失败:', error)
+        ElMessage.error('获取用户资料失败: ' + (error?.response?.data?.detail || '未知错误'))
+        return false
+      } finally {
+        profileLoading.value = false
+      }
+    }
+
+    // 更新用户资料
+    async function updateProfile(formData: FormData) {
+      if (!isAuthenticated.value) {
+        ElMessage.warning('请先登录')
+        return false
+      }
+
+      profileLoading.value = true
+      try {
+        const { data } = await userApi.updateProfile(formData)
+        profile.value = data
+        return true
+      } catch (error: any) {
+        console.error('更新用户资料失败:', error)
+        ElMessage.error('更新用户资料失败: ' + (error?.response?.data?.detail || '未知错误'))
+        return false
+      } finally {
+        profileLoading.value = false
+      }
+    }
+
     // 重置登录表单
     function resetLoginForm() {
       loginForm.value = { username: '', password: '' }
@@ -149,6 +195,8 @@ export const useUserStore = defineStore(
     return {
       accessToken,
       refreshToken,
+      profile,
+      profileLoading,
       loginForm,
       loginLoading,
       registerForm,
@@ -159,6 +207,8 @@ export const useUserStore = defineStore(
       handleLogin,
       handleRegister,
       handleLogout,
+      fetchProfile,
+      updateProfile,
       resetLoginForm,
       resetRegisterForm
     }

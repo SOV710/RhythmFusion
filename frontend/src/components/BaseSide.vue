@@ -51,6 +51,7 @@ const newPlaylistFromRecommendName = ref('')
 const total = ref(0)
 const currentPage = ref(1)
 const pageSize = ref(10)
+
 const hasNextPage = ref(false)
 const hasPrevPage = ref(false)
 const nextPageUrl = ref<string | null>(null)

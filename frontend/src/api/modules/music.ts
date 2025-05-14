@@ -5,6 +5,7 @@ export interface Song {
   id: number
   title: string
   artist: string
+  school: string
   // … 如有其它字段
 }
 
@@ -22,10 +23,10 @@ export interface PaginatedResponse<T> {
 }
 
 // 搜索歌曲 - 公开接口，不需要鉴权
-export function searchSongs(keyword: string): Promise<PaginatedResponse<Song>> {
+export function searchSongs(keyword: string, page: number = 1): Promise<PaginatedResponse<Song>> {
   return client
     .get<PaginatedResponse<Song>>('/api/music/', {
-      params: { search: keyword },
+      params: { search: keyword, page },
       skipAuth: true,    // 搜索接口是公开的，跳过 auth 拦截
     })
     .then(res => {
@@ -61,11 +62,28 @@ export function unlikeSong(songId: number): Promise<{ detail: string }> {
     .then(res => res.data)
 }
 
+// 从喜欢列表中删除歌曲 - 需要鉴权
+export function deleteLikedSong(songId: number): Promise<{ detail: string }> {
+  return client
+    .delete<{ detail: string }>(`/api/music/likes/${songId}/`)
+    .then(res => {
+      console.log('Delete liked song response:', res.data)
+      return res.data
+    })
+    .catch(err => {
+      console.error('Failed to delete liked song:', err)
+      throw err
+    })
+}
+
 // 获取用户喜欢的歌曲列表 - 需要鉴权
 export function getLikedSongs(): Promise<Song[]> {
   return client
     .get<Song[]>('/api/music/likes/')
-    .then(res => res.data)
+    .then(res => {
+      console.log('Liked songs response:', res.data)
+      return res.data
+    })
     .catch(err => {
       console.error('Failed to fetch liked songs:', err)
       // Return empty array instead of throwing to prevent cascading errors

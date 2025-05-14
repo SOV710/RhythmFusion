@@ -6,6 +6,7 @@ from .views import (
     GenreRecommendationView,
     SongLikeToggleView,
     UserLikedSongsView,
+    LikedSongDeleteView,
 )
 
 urlpatterns = [
@@ -18,4 +19,5 @@ urlpatterns = [
         name="song-genre-recommend",
     ),
     path("likes/", UserLikedSongsView.as_view(), name="user-liked-songs"),
+    path("likes/<int:song_id>/", LikedSongDeleteView.as_view(), name="liked-song-delete"),
 ]
