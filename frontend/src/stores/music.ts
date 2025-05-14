@@ -8,6 +8,8 @@ import type { Song } from '@/api/modules/music'
 export const useMusicStore = defineStore('music', () => {
   // 创建歌曲时的"选中"功能，存放 song.id 列表
   const selectedSongIds = ref<number[]>([])
+  // 用于歌单创建的选中歌曲缓冲区
+  const playlistSongBuffer = ref<Song[]>([])
   // 用户喜欢的歌曲ID列表
   const likedSongIds = ref<number[]>([])
   // 用户喜欢的歌曲完整信息
@@ -24,6 +26,38 @@ export const useMusicStore = defineStore('music', () => {
     } else {
       selectedSongIds.value.push(songId)
     }
+  }
+
+  // 添加或移除歌曲到歌单创建缓冲区
+  function toggleSongInBuffer(song: Song) {
+    const idx = playlistSongBuffer.value.findIndex(s => s.id === song.id)
+    if (idx > -1) {
+      // 如果已存在，则移除
+      playlistSongBuffer.value.splice(idx, 1)
+    } else {
+      // 否则添加
+      playlistSongBuffer.value.push(song)
+    }
+  }
+
+  // 检查歌曲是否在缓冲区中
+  function isSongInBuffer(songId: number): boolean {
+    return playlistSongBuffer.value.some(song => song.id === songId)
+  }
+
+  // 清空选中歌曲缓冲区
+  function clearSongBuffer() {
+    playlistSongBuffer.value = []
+  }
+
+  // 获取选中歌曲数量
+  function getSelectedSongCount(): number {
+    return playlistSongBuffer.value.length
+  }
+
+  // 获取选中歌曲ID列表
+  function getSelectedSongIds(): number[] {
+    return playlistSongBuffer.value.map(song => song.id)
   }
 
   function clearSelection() {
@@ -101,12 +135,18 @@ export const useMusicStore = defineStore('music', () => {
     likedSongs,
     loadingIds,
     isLoadingLikes,
+    playlistSongBuffer,
     toggleSongSelection,
     clearSelection,
     isSongLiked,
     isSongLoading,
     handleLikeSong,
     fetchLikedSongs,
-    setLikedSongs
+    setLikedSongs,
+    toggleSongInBuffer,
+    isSongInBuffer,
+    clearSongBuffer,
+    getSelectedSongCount,
+    getSelectedSongIds
   }
 })

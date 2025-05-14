@@ -126,34 +126,37 @@ class PlaylistRecommendationView(APIView):
 
     permission_classes = [permissions.IsAuthenticated]
 
+    def get(self, request, pk):
+        playlist = get_object_or_404(Playlist, pk=pk, owner=request.user)
+        song_ids = list(playlist.songs.values_list("id", flat=True))
+        if not song_ids:
+            return Response([], status=status.HTTP_200_OK)
 
-def get(self, request, pk):
-    # 1. 取出歌单中所有 song_id
-    playlist = get_object_or_404(Playlist, pk=pk, owner=request.user)
-    song_ids = list(playlist.songs.values_list("id", flat=True))
-    if not song_ids:
-        return Response([], status=status.HTTP_200_OK)
+        # —— 1. 取歌单向量 ——
+        vecs = [
+            sv.hybrid_vector
+            for sv in SongVector.objects.filter(song_id__in=song_ids)
+            if sv.hybrid_vector
+        ]
+        if not vecs:
+            return Response([], status=status.HTTP_200_OK)
 
-    # 2. 拉 hybrid_vector 并平均
-    vecs = []
-    for sid in song_ids:
-        sv = SongVector.objects.filter(song_id=sid).first()
-        if sv and sv.hybrid_vector:
-            vecs.append(sv.hybrid_vector)
-    if not vecs:
-        return Response([], status=status.HTTP_200_OK)
+        arr = np.array(vecs, dtype=np.float32)
+        faiss.normalize_L2(arr)
+        query = arr.mean(axis=0, keepdims=True)
+        faiss.normalize_L2(query)
 
-    arr = np.array(vecs, dtype=np.float32)
-    faiss.normalize_L2(arr)
-    query = arr.mean(axis=0, keepdims=True)
-    faiss.normalize_L2(query)
+        # —— 2. 检索 3×10 条候选（足够剔除后仍≥10） ——
+        index, song_map = _load_index()
+        SEARCH_K = 50  # 检索更大 K
+        D, I = index.search(query, SEARCH_K)
+        rec_ids = song_map[I[0]].tolist()
 
-    # 3. 检索 Top-10
-    index, song_map = _load_index()
-    D, I = index.search(query, 10)
-    rec_ids = song_map[I[0]].tolist()
+        # —— 3. 剔除歌单已有歌曲，再取前 10 ——
+        original_set = set(song_ids)
+        filtered = [sid for sid in rec_ids if sid not in original_set][:10]
 
-    # 4. 拿具体 Song 并序列化
-    songs = Song.objects.filter(id__in=rec_ids)
-    serializer = SongSerializer(songs, many=True)
-    return Response(serializer.data, status=status.HTTP_200_OK)
+        # 若过滤后不足 10，可按需再扩 K 或直接返回现有结果
+        songs = Song.objects.filter(id__in=filtered)
+        serializer = SongSerializer(songs, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
