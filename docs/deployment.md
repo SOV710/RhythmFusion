@@ -9,17 +9,18 @@
 - **Python**: 3.8+ (推荐3.9)
 - **Node.js**: 16+ (推荐18.x)
 - **npm/pnpm**: 最新稳定版
-- **数据库**: SQLite (开发) / MySQL 5.7+ (生产)
+- **数据库**: MySQL 5.7+
 - **Web服务器**: Nginx (生产环境)
 
 ### 硬件建议
 
-- **开发环境**: 
+- **开发环境**:
+
   - 2核心CPU
   - 4GB内存
   - 10GB存储空间
-  
-- **生产环境**: 
+- **生产环境**:
+
   - 4核心CPU
   - 8GB内存
   - 20GB+ SSD存储
@@ -67,13 +68,14 @@ pnpm install  # 或 npm install
 # 启动后端开发服务器（在backend目录下）
 python manage.py runserver
 
-# 启动前端开发服务器（在frontend目录下，新开一个终端）
-pnpm dev  # 或 npm run dev
+# 启动前端开发服务器（在frontend目录下或者在RhythmFusion目录，新开一个终端）
+just  # 或 just run
 ```
 
 开发服务器启动后，可以通过以下地址访问：
+
 - 后端API: http://127.0.0.1:8000
-- 前端应用: http://localhost:5173
+- 前端应用: http://127.0.0.1:5173
 
 ## 生产环境部署
 
@@ -210,7 +212,6 @@ RhythmFusion 也提供了 Docker 部署方案。
 ### 使用 Docker Compose 部署
 
 1. 确保安装了 Docker 和 Docker Compose
-
 2. 在项目根目录创建 `docker-compose.yml` 文件:
 
 ```yaml
@@ -321,21 +322,22 @@ python manage.py build_faiss_index
 ## 部署注意事项
 
 1. **安全设置**:
+
    - 生产环境中设置 `DEBUG = False`
    - 更新 `SECRET_KEY`
    - 配置 HTTPS
    - 设置合适的 CORS 策略
-
 2. **性能优化**:
+
    - 启用数据库连接池
    - 配置适当的缓存策略
    - 设置合理的 Gunicorn worker 数量
-
 3. **数据备份**:
+
    - 定期备份数据库
    - 设置日志轮转策略
-
 4. **监控**:
+
    - 设置应用监控
    - 配置错误报警
 
@@ -344,20 +346,21 @@ python manage.py build_faiss_index
 ### 常见问题
 
 1. **数据库连接失败**
+
    - 检查数据库凭据和连接设置
    - 确认数据库服务运行状态
-   
 2. **静态文件404**
+
    - 检查 `STATIC_ROOT` 和 `STATIC_URL` 设置
    - 确认 `collectstatic` 命令已执行
    - 检查 Nginx 配置中的路径
-
 3. **API 请求失败**
+
    - 检查 CORS 配置
    - 确认 API 路径正确
    - 查看后端日志获取详细错误信息
-
 4. **推荐系统不工作**
+
    - 确认所有推荐系统初始化命令已执行
    - 检查 FAISS 索引文件是否存在
    - 验证数据导入是否成功
@@ -388,4 +391,4 @@ tail -f /path/to/RhythmFusion/backend/logs/debug.log
 5. 重新构建前端资源
 6. 重启服务
 
-详细的升级步骤可能因版本变化而有所不同，请参考具体版本的升级说明。 
+详细的升级步骤可能因版本变化而有所不同，请参考具体版本的升级说明。
