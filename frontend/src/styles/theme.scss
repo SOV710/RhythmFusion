@@ -9,6 +9,10 @@
   --rf-secondary-light: #8a4dd0;
   --rf-secondary-dark: #5523a0;
   
+  // RGB versions for transparency manipulation
+  --rf-primary-rgb: 74, 134, 232;
+  --rf-secondary-rgb: 108, 45, 199;
+  
   --rf-success: #67c23a;
   --rf-warning: #e6a23c;
   --rf-danger: #f56c6c;
@@ -39,6 +43,17 @@
   --rf-border-radius-lg: 16px;
   --rf-border-radius-xl: 24px;
   --rf-border-radius-full: 9999px;
+  
+  // Animation durations
+  --rf-anim-duration-fast: 0.3s;
+  --rf-anim-duration-normal: 0.5s;
+  --rf-anim-duration-slow: 1s;
+  
+  // Z-index layers
+  --rf-z-index-base: 1;
+  --rf-z-index-above: 10;
+  --rf-z-index-modal: 100;
+  --rf-z-index-tooltip: 1000;
 }
 
 // Common mixins
@@ -109,6 +124,19 @@
   }
 }
 
+// Glassmorphism effect
+@mixin rf-glass-effect {
+  background-color: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  
+  @media (prefers-color-scheme: dark) {
+    background-color: rgba(30, 30, 30, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+}
+
 // Media queries
 @mixin mobile {
   @media (max-width: 640px) {
@@ -125,5 +153,18 @@
 @mixin desktop {
   @media (min-width: 1025px) {
     @content;
+  }
+}
+
+// New: Responsive typography
+@mixin responsive-text($base-size) {
+  font-size: $base-size;
+  
+  @include mobile {
+    font-size: $base-size * 0.85;
+  }
+  
+  @include tablet {
+    font-size: $base-size * 0.9;
   }
 } 

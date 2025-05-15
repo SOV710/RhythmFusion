@@ -1,16 +1,18 @@
 <template>
   <el-main
-    class="m-0 p-0 bg-gradient-to-b dark:from-[#212121] dark:to-[#121212] min-h-screen from-[#f2f2f2] to-[#e5e5e5]"
+    class="main-gradient-bg m-0 p-0 bg-gradient-to-b dark:from-[#212121] dark:via-[#1a1a1a] dark:to-[#121212] from-[#f8f9fa] via-[#f0f2f5] to-[#e5e8ed] min-h-screen"
   >
-    <div class="container mx-auto p-4 flex flex-col items-center">
-      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 max-w-xl w-full">
-        <div class="text-center mb-8">
-          <h2 class="text-2xl font-bold mb-2 dark:text-white">个人资料</h2>
-          <div class="w-16 h-1 bg-blue-500 mx-auto rounded-full"></div>
+    <div class="content-container">
+      <div class="profile-card">
+        <div class="page-header">
+          <div class="title-icon">
+            <i class="el-icon-user"></i>
+          </div>
+          <h1 class="page-title">个人资料</h1>
         </div>
 
         <!-- 头像上传 - 单独为头像创建一个区域 -->
-        <div class="flex justify-center mb-8">
+        <div class="avatar-section">
           <el-upload
             class="avatar-uploader"
             :action="`/api/user/profile/`"
@@ -24,11 +26,14 @@
             accept="image/*"
           >
             <div class="avatar-container">
-              <img v-if="form.avatar" :src="form.avatar" class="avatar" />
-              <el-icon v-else class="avatar-placeholder">
-                <Plus />
-              </el-icon>
-              <div class="avatar-hover-text">更换头像</div>
+              <img v-if="form.avatar" :src="form.avatar" class="avatar-image" />
+              <div v-else class="avatar-placeholder">
+                <i class="el-icon-plus"></i>
+              </div>
+              <div class="avatar-overlay">
+                <i class="el-icon-camera"></i>
+                <span>更换头像</span>
+              </div>
             </div>
           </el-upload>
         </div>
@@ -41,20 +46,38 @@
         >
           <!-- 用户名输入 -->
           <el-form-item label="用户名" prop="username">
-            <el-input v-model="form.username" placeholder="请输入用户名" />
+            <el-input 
+              v-model="form.username" 
+              placeholder="请输入用户名"
+              prefix-icon="el-icon-user"
+            />
           </el-form-item>
 
           <!-- 姓名 -->
           <el-form-item label="姓名" prop="first_name">
-            <div class="grid grid-cols-2 gap-4">
-              <el-input v-model="form.first_name" placeholder="名" />
-              <el-input v-model="form.last_name" placeholder="姓" />
+            <div class="name-inputs">
+              <el-input 
+                v-model="form.first_name" 
+                placeholder="名"
+                prefix-icon="el-icon-user"
+                class="firstname-input"
+              />
+              <el-input 
+                v-model="form.last_name" 
+                placeholder="姓"
+                prefix-icon="el-icon-user"
+                class="lastname-input"
+              />
             </div>
           </el-form-item>
 
           <!-- 邮箱 -->
           <el-form-item label="邮箱" prop="email">
-            <el-input v-model="form.email" placeholder="请输入邮箱" />
+            <el-input 
+              v-model="form.email" 
+              placeholder="请输入邮箱"
+              prefix-icon="el-icon-message"
+            />
           </el-form-item>
 
           <!-- 个人简介 -->
@@ -62,8 +85,9 @@
             <el-input
               v-model="form.bio"
               type="textarea"
-              :rows="3"
+              :rows="4"
               placeholder="请输入个人简介"
+              class="bio-input"
             />
           </el-form-item>
 
@@ -75,13 +99,19 @@
               placeholder="选择日期"
               format="YYYY-MM-DD"
               value-format="YYYY-MM-DD"
-              style="width: 100%"
+              class="date-picker"
             />
           </el-form-item>
 
           <!-- 保存按钮 -->
-          <el-form-item>
-            <el-button type="primary" @click="saveProfile" :loading="loading" class="w-full">
+          <el-form-item class="form-actions">
+            <el-button 
+              type="primary" 
+              @click="saveProfile" 
+              :loading="loading" 
+              class="save-button animated-button"
+            >
+              <i class="el-icon-check mr-1"></i>
               保存个人资料
             </el-button>
           </el-form-item>
@@ -220,92 +250,219 @@ onMounted(async () => {
 </script>
 
 <style scoped lang="scss">
-.profile-form {
-  max-width: 100%;
+@import '@/styles/components/base.scss';
+
+.content-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+  
+  @include mobile {
+    padding: 1rem;
+  }
 }
 
-.avatar-uploader {
-  display: block;
-  text-align: center;
+.profile-card {
+  @include rf-card;
+  padding: 2rem;
+  max-width: 700px;
+  margin: 0 auto;
+  background-color: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
   
-  .avatar-container {
-    position: relative;
-    display: inline-block;
+  @media (prefers-color-scheme: dark) {
+    background-color: rgba(30, 30, 30, 0.8);
+  }
+  
+  @include mobile {
+    padding: 1.5rem;
+  }
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 2rem;
+  gap: 1rem;
+  
+  .title-icon {
+    width: 48px;
+    height: 48px;
     border-radius: 50%;
-    overflow: hidden;
-    transition: all 0.3s;
-    width: 120px;
-    height: 120px;
+    background: linear-gradient(135deg, var(--rf-primary), var(--rf-secondary));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.5rem;
+    box-shadow: var(--rf-shadow-md);
+  }
+  
+  .page-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin: 0;
+    @include rf-text-gradient;
+  }
+}
+
+.avatar-section {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 2rem;
+  
+  .avatar-uploader {
+    .avatar-container {
+      position: relative;
+      width: 140px;
+      height: 140px;
+      border-radius: 50%;
+      overflow: hidden;
+      cursor: pointer;
+      box-shadow: var(--rf-shadow-md);
+      border: 3px solid rgba(var(--rf-primary-rgb), 0.3);
+      transition: all var(--rf-transition-normal);
+      
+      &:hover {
+        border-color: var(--rf-primary);
+        transform: scale(1.05);
+        
+        .avatar-overlay {
+          opacity: 1;
+        }
+      }
+      
+      .avatar-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      
+      .avatar-placeholder {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: rgba(var(--rf-primary-rgb), 0.1);
+        font-size: 2rem;
+        color: var(--rf-primary);
+      }
+      
+      .avatar-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.5);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        opacity: 0;
+        transition: opacity var(--rf-transition-normal);
+        
+        i {
+          font-size: 1.5rem;
+          margin-bottom: 0.5rem;
+        }
+        
+        span {
+          font-size: 0.9rem;
+        }
+      }
+    }
+  }
+}
+
+.profile-form {
+  .name-inputs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    
+    @include mobile {
+      grid-template-columns: 1fr;
+    }
+  }
+  
+  :deep(.el-input__wrapper) {
+    box-shadow: var(--rf-shadow-sm);
+    transition: all var(--rf-transition-normal);
+    border-radius: 8px;
+    
+    &:focus-within {
+      box-shadow: 0 0 0 1px var(--rf-primary) !important;
+      transform: translateY(-2px);
+    }
+  }
+  
+  .bio-input {
+    :deep(.el-textarea__inner) {
+      border-radius: 8px;
+      resize: none;
+      
+      &:focus {
+        box-shadow: 0 0 0 1px var(--rf-primary) !important;
+      }
+    }
+  }
+  
+  .date-picker {
+    width: 100%;
+  }
+  
+  .form-actions {
+    margin-top: 2rem;
+    display: flex;
+    justify-content: center;
+  }
+  
+  .save-button {
+    padding: 0.75rem 2rem;
+    font-weight: 500;
+    width: 100%;
+    max-width: 300px;
+    background: linear-gradient(90deg, var(--rf-primary), var(--rf-secondary));
+    border: none;
     
     &:hover {
-      cursor: pointer;
-      .avatar-hover-text {
-        opacity: 1;
-      }
-      &::after {
-        opacity: 0.7;
-      }
+      transform: translateY(-3px);
+      box-shadow: var(--rf-shadow-md);
     }
-    
-    &::after {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(0, 0, 0, 0.4);
-      opacity: 0;
-      transition: opacity 0.3s;
-    }
-    
-    .avatar-hover-text {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      color: white;
-      z-index: 10;
-      opacity: 0;
-      transition: opacity 0.3s;
-      font-size: 14px;
-      text-align: center;
-      width: 100%;
-    }
-  }
-
-  .avatar-placeholder {
-    font-size: 28px;
-    color: #8c939d;
-    width: 120px;
-    height: 120px;
-    line-height: 120px;
-    border: 2px dashed #d9d9d9;
-    border-radius: 50%;
-    display: inline-block;
-    background-color: #f5f7fa;
-  }
-
-  .avatar {
-    width: 120px;
-    height: 120px;
-    border-radius: 50%;
-    object-fit: cover;
-    display: inline-block;
   }
 }
 
-// Responsive adaptations
+// Responsive adjustments
 @media (max-width: 640px) {
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+    
+    .title-icon {
+      width: 40px;
+      height: 40px;
+      font-size: 1.25rem;
+    }
+    
+    .page-title {
+      font-size: 1.5rem;
+    }
+  }
+  
   .profile-form {
-    .el-form-item__label {
+    :deep(.el-form-item__label) {
       float: none;
       display: block;
       text-align: left;
-      padding: 0 0 10px;
+      padding: 0 0 8px;
+      line-height: 1.5;
     }
     
-    .el-form-item__content {
+    :deep(.el-form-item__content) {
       margin-left: 0 !important;
     }
   }

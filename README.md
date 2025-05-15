@@ -2,153 +2,175 @@
 
 [中文文档](README_zh.md)
 
+<div align="center">
+  <img src="frontend/src/assets/logo.png" alt="RhythmFusion Logo" width="200"/>
+  <h3>Intelligent Music Discovery & Recommendation Platform</h3>
+  <p>Built with Vue 3 + TypeScript + Django + AI Recommendation Engine</p>
+</div>
+
 ## Description
-RhythmFusion is a modern music recommendation system built with Django and Vue.js. It provides personalized music recommendations, playlist management, and a seamless user experience through its intuitive interface.
 
-## Features
+RhythmFusion is a modern music recommendation platform that provides personalized music discovery through an intelligent hybrid recommendation system. The platform combines collaborative filtering algorithms with content-based analysis to create a tailored music experience for each user.
 
-### Frontend
-- User authentication (login/register)
-- Personalized playlist management
-- Music player with playback controls
-- Song recommendation system
-- Responsive design for all devices
-- Real-time playlist updates
-- Interactive song operations (add to playlist, get recommendations)
+Built with a Vue.js frontend and Django backend, RhythmFusion offers a responsive, intuitive interface with powerful recommendation capabilities, making it easy for users to discover new music aligned with their unique preferences.
 
-### Backend
-- RESTful API architecture
-- User authentication and authorization
-- Music database management
-- Playlist CRUD operations
-- Hybrid recommendation algorithm
-- CSV batch import for music data
-- Secure file handling for user avatars
+## Core Features
 
-## Tech Stack
+### User Experience
 
-### Frontend
-- Vue 3.5.13 with Composition API
-- TypeScript
-- Vite 6.2.1
-- Pinia for state management
-- Axios for HTTP requests
-- SCSS for styling
+- **Personalized Recommendations**: Intelligent music suggestions based on listening history and preferences
+- **Interactive Playlist Management**: Create, edit, and share custom music collections
+- **Advanced Music Player**: Smooth playback with controls for volume, shuffle, repeat
+- **Genre Exploration**: Discover music across multiple genres with curated recommendations
+- **Responsive Design**: Full functionality across desktop and mobile devices
 
-### Backend
-- Django 5.0.2
-- Django REST framework
-- SQLite (configurable to other databases)
-- Django authentication system
-- Custom recommendation algorithms
+### Technical Highlights
 
-## Installation
+- **Hybrid Recommendation Engine**: Combining collaborative filtering and content-based analysis
+- **Real-time State Management**: Reactive interface with Pinia state management
+- **Secure Authentication**: JWT-based secure user authentication system
+- **RESTful API Architecture**: Well-structured backend with comprehensive API endpoints
+- **TypeScript Integration**: Type-safe frontend development with enhanced IDE support
+
+## Architecture Overview
+
+RhythmFusion follows a modern, modular architecture:
+
+```mermaid
+graph TD
+    User[User] -->|Interacts with| Frontend[Vue.js Frontend]
+    Frontend -->|API Requests| Backend[Django Backend]
+    Backend -->|Returns Data| Frontend
+    Backend -->|Reads/Writes| Database[(Database)]
+    Backend -->|Processes Music Data| RecommendationEngine[Recommendation Engine]
+    RecommendationEngine -->|Generates Recommendations| Database
+```
+
+### Technology Stack
+
+#### Frontend
+
+- **Framework**: Vue 3.5.13 with Composition API
+- **Language**: TypeScript
+- **Build Tool**: Vite 6.2.1
+- **State Management**: Pinia
+- **HTTP Client**: Axios
+- **Styling**: SCSS, Element Plus UI components
+
+#### Backend
+
+- **Framework**: Django 5.0.2
+- **API**: Django REST Framework
+- **Database**: SQLite (development), MySQL (production)
+- **Authentication**: JWT with token refresh
+- **Recommendation**: Custom hybrid algorithm (SVD + content-based)
+
+## Getting Started
 
 ### Prerequisites
+
 - Python 3.8+
 - Node.js 16+
-- npm or yarn
+- npm or pnpm package manager
 
 ### Backend Setup
-1. Clone the repository
+
 ```bash
+# Clone repository
 git clone https://github.com/SOV710/RhythmFusion.git
 cd RhythmFusion/backend
-```
 
-2. Create and activate virtual environment
-```bash
+# Create and activate virtual environment
 python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
-```
 
-3. Install dependencies
-```bash
+# Install dependencies
 pip install -r requirements.txt
-```
 
-4. Run database migrations
-```bash
-python manage.py makemigrations
+# Run migrations
 python manage.py migrate
-```
 
-5. Create superuser (optional)
-```bash
+# Create superuser (optional)
 python manage.py createsuperuser
+
+# Start backend server
+python manage.py runserver
 ```
 
 ### Frontend Setup
-1. Navigate to frontend directory
+
 ```bash
+# Navigate to frontend directory
 cd ../frontend
-```
 
-2. Install dependencies
-```bash
-npm install
-```
+# Install dependencies
+pnpm install  # or npm install
 
-## Usage
-
-### Start Backend Server
-```bash
-cd backend
-python manage.py runserver
+# Start development server
+pnpm dev  # or npm run dev
 ```
-The backend API will be available at `http://127.0.0.1:8000`
-
-### Start Frontend Development Server
-```bash
-cd frontend
-npm run dev
-```
-The frontend application will be available at `http://localhost:5173`
 
 ## Project Structure
 
-### Backend Structure
 ```
-backend/
-├── user/           # User management app
-├── music/          # Music management app
-├── playlist/       # Playlist management app
-├── recommendation/ # Recommendation system
-├── api/           # API integration layer
-└── media/         # Media files storage
+RhythmFusion/
+├── backend/               # Django backend application
+│   ├── backend/           # Project configuration
+│   ├── user/              # User authentication and profiles
+│   ├── music/             # Music data and metadata
+│   ├── playlist/          # Playlist management
+│   ├── recommender/       # Recommendation engine
+│   └── manage.py          # Django management script
+├── frontend/              # Vue.js frontend application
+│   ├── src/
+│   │   ├── api/           # API client and modules
+│   │   ├── assets/        # Static assets
+│   │   ├── components/    # Vue components
+│   │   ├── composables/   # Vue composables
+│   │   ├── pages/         # Page components
+│   │   ├── router/        # Vue Router configuration
+│   │   ├── stores/        # Pinia state stores
+│   │   ├── styles/        # Global SCSS styles
+│   │   └── types/         # TypeScript type definitions
+│   └── public/            # Public static files
+└── docs/                  # Project documentation
+    ├── backend/           # Backend-specific documentation
+    ├── frontend/          # Frontend-specific documentation
+    ├── architecture.md    # System architecture details
+    ├── api_doc.md         # API documentation
+    └── user_guide.md      # User manual
 ```
 
-### Frontend Structure
-```
-frontend/
-├── src/
-│   ├── assets/     # Static assets
-│   ├── components/ # Vue components
-│   ├── stores/     # Pinia state management
-│   └── axios.ts    # Axios configuration
-├── public/         # Public resources
-└── configuration files
-```
+## Documentation
 
-## Contribution Guidelines
+For comprehensive documentation, please see the [docs directory](docs/index.md), which includes:
+
+- [System Architecture](docs/architecture.md)
+- [API Documentation](docs/api_doc.md)
+- [Development Guide](docs/development.md)
+- [User Guide](docs/user_guide.md)
+- [Deployment Guide](docs/deployment.md)
+- [Data Preparation Guide](docs/data_preparation.md)
+
+## Contributing
+
+We welcome contributions to RhythmFusion! Please follow these steps:
 
 1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
+2. Create your feature branch: `git checkout -b feature/amazing-feature`
+3. Commit your changes: `git commit -m 'Add amazing feature'`
+4. Push to the branch: `git push origin feature/amazing-feature`
 5. Open a Pull Request
 
-### Development Standards
-- Follow the existing code style
-- Write clear commit messages
-- Add appropriate documentation
-- Include tests for new features
-- Ensure all tests pass before submitting PR
+For more detailed contribution guidelines, please see our [Development Guide](docs/development.md).
 
 ## License
+
 This project is licensed under the GNU General Public License v3.0 - see the [LICENSE](LICENSE) file for details.
 
 ## Acknowledgments
-- Django team for the excellent web framework
-- Vue.js team for the progressive JavaScript framework
-- All contributors who have helped shape this project 
+
+- The Vue.js team for their excellent framework
+- Django team for the powerful web framework
+- All open-source libraries that made this project possible
+- Contributors who have helped improve RhythmFusion

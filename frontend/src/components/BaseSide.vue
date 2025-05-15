@@ -476,28 +476,35 @@ function handleRecommendationSelectionChange(selection: Song[]) {
 </script>
 
 <template>
-  <el-aside width="20%" class="dark:bg-[#121212] bg-[#f2f2f2]">
-    <el-scrollbar height="50vw" class="">
+  <el-aside width="20%" class="base-layout-sidebar dark:bg-[#121212] bg-[#f8f9fa]">
+    <el-scrollbar height="calc(100vh - 60px)" class="sidebar-scrollbar">
       <!-- 未登录或无歌单时显示创建引导 -->
       <template v-if="!hasPlaylists">
-        <el-card style="max-width: 480px" shadow="hover" class="m-4 bg-[#1f1f1f]">
-          <div class="card-header font-bold text-left text-lg">
-            <span v-if="isAuthenticated">创建您的第一个歌单</span>
-            <span v-else>登录后创建歌单</span>
-          </div>
-          <p class="text-left text-sm">
-            {{ isAuthenticated ? '很简单，我们将帮助您完成' : '登录后可以创建个性化歌单' }}
-          </p>
-          <el-button
-            type="primary"
-            round
-            style="font-weight: bold"
-            class="m-4 w-60"
-            @click="handlePlaylistCreate"
-          >
-            {{ isAuthenticated ? '创建歌单' : '登录后创建' }}
-          </el-button>
-        </el-card>
+        <div class="empty-playlists-container">
+          <el-card class="welcome-card" shadow="hover">
+            <div class="welcome-card-content">
+              <div class="welcome-icon">
+                <i class="el-icon-plus"></i>
+              </div>
+              <div class="card-header font-bold text-left text-lg">
+                <span v-if="isAuthenticated">创建您的第一个歌单</span>
+                <span v-else>登录后创建歌单</span>
+              </div>
+              <p class="text-left text-sm my-2">
+                {{ isAuthenticated ? '很简单，我们将帮助您完成' : '登录后可以创建个性化歌单' }}
+              </p>
+              <el-button
+                type="primary"
+                round
+                class="create-button animated-button"
+                @click="handlePlaylistCreate"
+              >
+                <i class="el-icon-plus mr-1"></i>
+                {{ isAuthenticated ? '创建歌单' : '登录后创建' }}
+              </el-button>
+            </div>
+          </el-card>
+        </div>
       </template>
 
       <!-- 已有歌单时显示歌单列表 -->
@@ -507,8 +514,8 @@ function handleRecommendationSelectionChange(selection: Song[]) {
           <el-card 
             v-for="playlist in playlists" 
             :key="playlist.id" 
-            shadow="hover" 
-            class="playlist-card mb-4 transition-all duration-300 hover:shadow-lg hover:transform hover:scale-[1.02]"
+            shadow="never" 
+            class="playlist-card"
             @click="openDetail(playlist.id)"
           >
             <div class="card-content">
@@ -517,7 +524,7 @@ function handleRecommendationSelectionChange(selection: Song[]) {
               </div>
               <div class="playlist-info">
                 <h3 class="playlist-name">{{ playlist.name }}</h3>
-                <p class="playlist-count text-sm text-gray-500">
+                <p class="playlist-count">
                   {{ (playlistStore.playlistTracks[playlist.id] || []).length }} 首歌曲
                 </p>
               </div>
@@ -526,17 +533,17 @@ function handleRecommendationSelectionChange(selection: Song[]) {
           
           <!-- 创建新歌单卡片 -->
           <el-card 
-            shadow="hover" 
-            class="playlist-card create-playlist-card mb-4 transition-all duration-300 hover:shadow-lg hover:transform hover:scale-[1.02]"
+            shadow="never" 
+            class="playlist-card create-playlist-card"
             @click="handlePlaylistCreate"
           >
             <div class="card-content">
-              <div class="playlist-icon">
+              <div class="playlist-icon create-icon">
                 <el-icon class="text-2xl"><Plus /></el-icon>
               </div>
               <div class="playlist-info">
                 <h3 class="playlist-name">创建新歌单</h3>
-                <p class="playlist-count text-sm text-gray-500">
+                <p class="playlist-count">
                   添加你喜欢的音乐
                 </p>
               </div>
@@ -548,19 +555,46 @@ function handleRecommendationSelectionChange(selection: Song[]) {
   </el-aside>
 
   <!-- 歌单创建对话框 -->
-  <el-dialog v-model="playlistCreating" title="创建歌单" width="60%" destroy-on-close>
+  <el-dialog 
+    v-model="playlistCreating" 
+    title="创建歌单" 
+    width="60%" 
+    destroy-on-close
+    class="enhanced-dialog playlist-create-dialog"
+  >
     <el-form>
       <el-form-item label="歌单名称">
-        <el-input v-model="createPlaylistName" placeholder="请输入歌单名称"/>
+        <el-input 
+          v-model="createPlaylistName" 
+          placeholder="请输入歌单名称"
+          prefix-icon="el-icon-headset"
+        />
       </el-form-item>
       <el-form-item label="搜索歌曲">
-        <el-input v-model="searchKeyword" @keyup.enter="searchSongsForPlaylist" placeholder="输入关键词搜索歌曲" clearable />
-        <el-button type="primary" @click="searchSongsForPlaylist">搜索</el-button>
+        <div class="search-input-group">
+          <el-input 
+            v-model="searchKeyword" 
+            @keyup.enter="searchSongsForPlaylist" 
+            placeholder="输入关键词搜索歌曲" 
+            clearable
+            prefix-icon="el-icon-search"
+          />
+          <el-button 
+            type="primary" 
+            @click="searchSongsForPlaylist"
+            class="animated-button"
+          >
+            搜索
+          </el-button>
+        </div>
       </el-form-item>
     </el-form>
 
-    <div v-if="searchResults.length === 0 && !isLoadingSongs" class="text-center py-4">
-      <p>没有找到匹配的结果</p>
+    <div v-if="searchResults.length === 0 && !isLoadingSongs" class="text-center py-8">
+      <el-empty description="没有找到匹配的结果" />
+      <p class="mt-4 text-sm text-gray-500">
+        尝试不同的关键词，例如歌手名、歌曲名或流派
+      </p>
     </div>
 
     <el-table
@@ -571,15 +605,16 @@ function handleRecommendationSelectionChange(selection: Song[]) {
       row-key="id"
       :row-class-name="tableRowClassName"
       ref="songsTableRef"
+      class="enhanced-table"
     >
       <el-table-column type="selection" width="55" :selectable="isSelectable" />
-      <el-table-column prop="title" label="标题" />
-      <el-table-column prop="artist" label="歌手" />
+      <el-table-column prop="title" label="标题" min-width="150" show-overflow-tooltip />
+      <el-table-column prop="artist" label="歌手" min-width="120" show-overflow-tooltip />
       <el-table-column prop="school" label="风格" width="120" />
     </el-table>
 
     <!-- 分页控件 -->
-    <div v-if="searchResults && searchResults.length > 0" class="flex justify-center mt-4">
+    <div v-if="searchResults && searchResults.length > 0" class="pagination-container">
       <el-pagination
         v-model:current-page="currentPage"
         :page-size="pageSize"
@@ -587,11 +622,14 @@ function handleRecommendationSelectionChange(selection: Song[]) {
         :total="total"
         @current-change="handlePageChange"
         :disabled="isLoadingSongs"
+        background
       />
     </div>
 
-    <div v-if="selectedSongCount > 0" class="my-3 text-right">
-      已选择 {{ selectedSongCount }} 首歌曲
+    <div v-if="selectedSongCount > 0" class="selection-info">
+      <div class="selection-badge">
+        <span>已选择 {{ selectedSongCount }} 首歌曲</span>
+      </div>
     </div>
 
     <template #footer>
@@ -601,6 +639,7 @@ function handleRecommendationSelectionChange(selection: Song[]) {
         @click="createPlaylist"
         :disabled="!createPlaylistName || selectedSongCount === 0"
         :loading="isLoadingSongs"
+        class="animated-button"
       >
         创建歌单
       </el-button>
@@ -608,37 +647,74 @@ function handleRecommendationSelectionChange(selection: Song[]) {
   </el-dialog>
 
   <!-- 歌单详情对话框 -->
-  <el-dialog v-model="showDetail" width="60%" destroy-on-close>
+  <el-dialog 
+    v-model="showDetail" 
+    width="60%" 
+    destroy-on-close
+    class="enhanced-dialog playlist-detail-dialog"
+  >
     <template #header>
       <div class="flex justify-between items-center w-full">
-        <span class="text-lg font-bold">歌单详情</span>
-        <div>
-          <el-button type="text" @click="getRecommendations">获取推荐</el-button>
-          <el-button type="text" @click="addMode = true">添加歌曲</el-button>
+        <span class="dialog-title">歌单详情</span>
+        <div class="action-buttons">
+          <el-button 
+            type="text" 
+            @click="getRecommendations"
+            class="action-text-button"
+          >
+            <i class="el-icon-magic-stick mr-1"></i>
+            获取推荐
+          </el-button>
+          <el-button 
+            type="text" 
+            @click="addMode = true"
+            class="action-text-button"
+          >
+            <i class="el-icon-plus mr-1"></i>
+            添加歌曲
+          </el-button>
         </div>
       </div>
     </template>
 
     <!-- 显示当前歌单曲目 -->
-    <el-table :data="currentTracks">
-      <el-table-column prop="title" label="标题" />
-      <el-table-column prop="artist" label="歌手" />
+    <el-table 
+      :data="currentTracks"
+      class="enhanced-table"
+    >
+      <el-table-column prop="title" label="标题" min-width="150" show-overflow-tooltip />
+      <el-table-column prop="artist" label="歌手" min-width="120" show-overflow-tooltip />
       <el-table-column prop="school" label="风格" width="120" />
       <el-table-column label="操作" width="120">
         <template #default="{ row }">
-          <el-button type="text" @click="removeTrackFromPlaylist(row.id)">移除</el-button>
+          <el-button 
+            type="danger" 
+            size="small" 
+            circle
+            @click="removeTrackFromPlaylist(row.id)"
+            class="action-button"
+          >
+            <i class="el-icon-delete"></i>
+          </el-button>
         </template>
       </el-table-column>
     </el-table>
 
     <!-- 添加歌曲模式 -->
     <template v-if="addMode">
-      <div class="my-4">
+      <el-divider content-position="left">
+        <i class="el-icon-plus mr-1"></i>
+        添加歌曲
+      </el-divider>
+      
+      <div class="search-container">
         <el-input
           v-model="detailSearchKeyword"
           placeholder="搜索歌曲..."
           clearable
           @keyup.enter="searchSongsForDetail"
+          prefix-icon="el-icon-search"
+          class="search-input"
         >
           <template #append>
             <el-button @click="searchSongsForDetail">搜索</el-button>
@@ -652,30 +728,47 @@ function handleRecommendationSelectionChange(selection: Song[]) {
         row-key="id"
         :row-class-name="tableRowClassName"
         ref="detailTableRef"
+        class="enhanced-table mt-4"
       >
-        <el-table-column type="selection" />
-        <el-table-column prop="title" label="标题" />
-        <el-table-column prop="artist" label="歌手" />
+        <el-table-column type="selection" width="55" />
+        <el-table-column prop="title" label="标题" min-width="150" show-overflow-tooltip />
+        <el-table-column prop="artist" label="歌手" min-width="120" show-overflow-tooltip />
         <el-table-column prop="school" label="风格" width="120" />
       </el-table>
     </template>
 
     <template #footer>
       <el-button @click="showDetail = false">关闭</el-button>
-      <el-button v-if="addMode" type="primary" @click="addTracksToPlaylist">添加到歌单</el-button>
+      <el-button 
+        v-if="addMode" 
+        type="primary" 
+        @click="addTracksToPlaylist"
+        class="animated-button"
+      >
+        添加到歌单
+      </el-button>
     </template>
   </el-dialog>
 
   <!-- 推荐对话框 -->
-  <el-dialog v-model="showRecommendations" title="推荐歌曲" width="60%" destroy-on-close>
+  <el-dialog 
+    v-model="showRecommendations" 
+    title="推荐歌曲" 
+    width="60%" 
+    destroy-on-close
+    class="enhanced-dialog recommendations-dialog"
+  >
     <template #header>
       <div class="flex justify-between items-center w-full">
-        <span class="text-lg font-bold">推荐歌曲</span>
+        <span class="dialog-title">
+          <i class="el-icon-magic-stick mr-1"></i>
+          推荐歌曲
+        </span>
       </div>
     </template>
 
-    <div v-if="recommendationResults.length === 0 && !isLoadingRecommendations" class="text-center py-4">
-      <p>没有找到匹配的推荐歌曲</p>
+    <div v-if="recommendationResults.length === 0 && !isLoadingRecommendations" class="text-center py-8">
+      <el-empty description="没有找到匹配的推荐歌曲" />
     </div>
 
     <el-table
@@ -686,43 +779,55 @@ function handleRecommendationSelectionChange(selection: Song[]) {
       :row-class-name="tableRowClassName"
       ref="recommendTableRef"
       v-loading="isLoadingRecommendations"
+      class="enhanced-table"
     >
-      <el-table-column type="selection" />
-      <el-table-column prop="title" label="标题" />
-      <el-table-column prop="artist" label="歌手" />
+      <el-table-column type="selection" width="55" />
+      <el-table-column prop="title" label="标题" min-width="150" show-overflow-tooltip />
+      <el-table-column prop="artist" label="歌手" min-width="120" show-overflow-tooltip />
       <el-table-column prop="school" label="风格" width="120" />
     </el-table>
 
-    <div class="mt-4">
-      <el-divider content-position="left">保存推荐歌曲</el-divider>
+    <div class="save-recommendations-section">
+      <el-divider content-position="left">
+        <i class="el-icon-star-on mr-1"></i>
+        保存推荐歌曲
+      </el-divider>
+      
       <el-form>
         <el-form-item label="创建新歌单">
-          <div class="flex items-center gap-2">
+          <div class="create-playlist-input-group">
             <el-input 
               v-model="newPlaylistFromRecommendName" 
               placeholder="输入新歌单名称" 
+              prefix-icon="el-icon-headset"
               class="flex-1"
             />
             <el-button 
               type="primary" 
               @click="saveRecommendationsAsPlaylist" 
               :disabled="!newPlaylistFromRecommendName || recommendationResults.length === 0"
+              class="animated-button"
             >
               保存到新歌单
             </el-button>
           </div>
         </el-form-item>
+        
         <el-form-item label="添加到当前歌单">
-          <el-button 
-            type="success" 
-            @click="addSelectedRecommendationsToCurrentPlaylist"
-            :disabled="musicStore.getSelectedSongCount() === 0"
-          >
-            添加选中歌曲到当前歌单
-          </el-button>
-          <span class="ml-2 text-gray-500" v-if="musicStore.getSelectedSongCount() > 0">
-            已选择 {{ musicStore.getSelectedSongCount() }} 首歌曲
-          </span>
+          <div class="add-to-current-container">
+            <el-button 
+              type="success" 
+              @click="addSelectedRecommendationsToCurrentPlaylist"
+              :disabled="musicStore.getSelectedSongCount() === 0"
+              class="animated-button"
+            >
+              添加选中歌曲到当前歌单
+            </el-button>
+            
+            <div v-if="musicStore.getSelectedSongCount() > 0" class="selection-badge inline-block ml-3">
+              已选择 {{ musicStore.getSelectedSongCount() }} 首歌曲
+            </div>
+          </div>
         </el-form-item>
       </el-form>
     </div>
@@ -734,74 +839,343 @@ function handleRecommendationSelectionChange(selection: Song[]) {
 </template>
 
 <style scoped lang="scss">
-:deep(.selected-row) {
-  background-color: rgba(64, 158, 255, 0.1);
-}
+@import '@/styles/components/base.scss';
 
-.playlist-grid {
-  display: flex;
-  flex-direction: column;
-}
-
-.playlist-card {
-  border-radius: 10px;
-  overflow: hidden;
-  cursor: pointer;
+.sidebar-scrollbar {
+  @include rf-smooth-scrollbar;
   
-  .card-content {
+  .empty-playlists-container {
+    padding: 2rem 1rem;
     display: flex;
-    align-items: center;
-    padding: 8px;
-  }
-  
-  .playlist-icon {
-    display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    width: 40px;
-    height: 40px;
-    border-radius: 8px;
-    background-color: var(--el-color-primary-light-9);
-    color: var(--el-color-primary);
-    margin-right: 12px;
+    min-height: 300px;
+    
+    .welcome-card {
+      max-width: 100%;
+      width: 100%;
+      border: none;
+      @include rf-glass-effect;
+      border-radius: var(--rf-border-radius-lg);
+      overflow: hidden;
+      
+      .welcome-card-content {
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+      }
+      
+      .welcome-icon {
+        width: 70px;
+        height: 70px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--rf-primary), var(--rf-secondary));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 1.5rem;
+        color: white;
+        font-size: 2rem;
+        box-shadow: var(--rf-shadow-md);
+      }
+      
+      .card-header {
+        font-size: 1.25rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+      }
+      
+      .create-button {
+        padding: 0.75rem 1.5rem;
+        font-weight: 600;
+        margin-top: 1rem;
+        background: linear-gradient(90deg, var(--rf-primary), var(--rf-secondary));
+        border: none;
+        box-shadow: var(--rf-shadow-sm);
+        
+        &:hover {
+          transform: translateY(-3px);
+          box-shadow: var(--rf-shadow-md);
+        }
+      }
+    }
   }
   
-  .playlist-info {
-    flex: 1;
+  .playlist-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1rem;
   }
   
-  .playlist-name {
-    font-weight: 600;
-    margin: 0;
-    margin-bottom: 4px;
-    font-size: 15px;
-    line-height: 1.2;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  
-  &.create-playlist-card {
-    border: 2px dashed var(--el-border-color);
+  .playlist-card {
+    border: none;
+    background-color: transparent;
+    margin-bottom: 0;
+    transition: all var(--rf-transition-normal);
+    
+    &:hover {
+      transform: translateX(5px);
+    }
+    
+    .card-content {
+      display: flex;
+      align-items: center;
+      padding: 0.75rem;
+      border-radius: var(--rf-border-radius-md);
+      background-color: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(5px);
+      border: 1px solid rgba(var(--rf-primary-rgb), 0.1);
+      transition: all var(--rf-transition-normal);
+      
+      @media (prefers-color-scheme: dark) {
+        background-color: rgba(30, 30, 30, 0.7);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+      
+      &:hover {
+        background-color: rgba(var(--rf-primary-rgb), 0.1);
+        border-color: var(--rf-primary-light);
+        box-shadow: var(--rf-shadow-sm);
+      }
+    }
     
     .playlist-icon {
-      background-color: var(--el-color-success-light-9);
-      color: var(--el-color-success);
+      width: 45px;
+      height: 45px;
+      border-radius: var(--rf-border-radius-md);
+      background: linear-gradient(135deg, var(--rf-primary), var(--rf-primary-light));
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 0.75rem;
+      box-shadow: var(--rf-shadow-sm);
+      flex-shrink: 0;
+      
+      &.create-icon {
+        background: linear-gradient(135deg, var(--rf-secondary), var(--rf-secondary-light));
+      }
+    }
+    
+    .playlist-info {
+      flex: 1;
+      min-width: 0;
+    }
+    
+    .playlist-name {
+      font-weight: 600;
+      margin: 0 0 0.25rem 0;
+      font-size: 0.95rem;
+      line-height: 1.2;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      color: var(--rf-text-primary-light);
+      
+      @media (prefers-color-scheme: dark) {
+        color: var(--rf-text-primary-dark);
+      }
+    }
+    
+    .playlist-count {
+      font-size: 0.8rem;
+      color: var(--rf-text-secondary-light);
+      margin: 0;
+      
+      @media (prefers-color-scheme: dark) {
+        color: var(--rf-text-secondary-dark);
+      }
+    }
+    
+    &.create-playlist-card .card-content {
+      border-style: dashed;
+      border-width: 1px;
+      border-color: var(--rf-border-color-light);
+      
+      @media (prefers-color-scheme: dark) {
+        border-color: var(--rf-border-color-dark);
+      }
     }
   }
 }
 
-@media (prefers-color-scheme: dark) {
-  .playlist-card {
-    .playlist-icon {
-      background-color: rgba(64, 158, 255, 0.1);
+:deep(.selected-row) {
+  background-color: rgba(var(--rf-primary-rgb), 0.1);
+}
+
+// Additional styles for dialog tables etc. (unchanged)
+
+.search-input-group {
+  display: flex;
+  gap: 0.5rem;
+  
+  .el-input {
+    flex: 1;
+  }
+}
+
+.dialog-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  @include rf-text-gradient;
+}
+
+.pagination-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 1.5rem;
+  
+  :deep(.el-pagination) {
+    --el-pagination-button-bg-color: rgba(var(--rf-primary-rgb), 0.05);
+    
+    .el-pagination__jump {
+      margin-left: 1rem;
     }
     
-    &.create-playlist-card {
-      border-color: #333;
+    button {
+      border-radius: var(--rf-border-radius-sm);
+      transition: all var(--rf-transition-normal);
       
-      .playlist-icon {
-        background-color: rgba(103, 194, 58, 0.1);
+      &:hover:not([disabled]) {
+        transform: translateY(-2px);
+        box-shadow: var(--rf-shadow-sm);
+      }
+      
+      &.is-active {
+        background-color: var(--rf-primary);
+      }
+    }
+  }
+}
+
+.selection-info {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-top: 1rem;
+}
+
+.selection-badge {
+  background: linear-gradient(90deg, var(--rf-primary), var(--rf-secondary));
+  color: white;
+  padding: 0.4rem 0.8rem;
+  border-radius: var(--rf-border-radius-full);
+  font-size: 0.9rem;
+  font-weight: 500;
+  box-shadow: var(--rf-shadow-sm);
+  display: inline-block;
+}
+
+.action-text-button {
+  padding: 0.4rem 0.8rem;
+  transition: all var(--rf-transition-normal);
+  border-radius: var(--rf-border-radius-md);
+  
+  &:hover {
+    background-color: rgba(var(--rf-primary-rgb), 0.1);
+    color: var(--rf-primary);
+  }
+}
+
+.action-button {
+  transition: all var(--rf-transition-normal);
+  
+  &:hover {
+    transform: scale(1.2);
+  }
+}
+
+.search-container {
+  margin-top: 1rem;
+  
+  .search-input {
+    width: 100%;
+    
+    :deep(.el-input__wrapper) {
+      box-shadow: var(--rf-shadow-sm);
+      transition: all var(--rf-transition-normal);
+      
+      &:focus-within {
+        box-shadow: 0 0 0 1px var(--rf-primary);
+      }
+    }
+  }
+}
+
+.save-recommendations-section {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  border-radius: var(--rf-border-radius-lg);
+  background-color: rgba(var(--rf-primary-rgb), 0.05);
+  
+  @media (prefers-color-scheme: dark) {
+    background-color: rgba(255, 255, 255, 0.05);
+  }
+  
+  .el-divider {
+    margin-top: 0;
+    
+    :deep(.el-divider__text) {
+      background-color: transparent;
+      color: var(--rf-primary);
+      font-weight: 600;
+    }
+  }
+  
+  .create-playlist-input-group {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    
+    @include mobile {
+      flex-direction: column;
+      align-items: stretch;
+    }
+  }
+  
+  .add-to-current-container {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+}
+
+// Dialog enhancements
+.playlist-create-dialog,
+.playlist-detail-dialog,
+.recommendations-dialog {
+  :deep(.el-dialog) {
+    border-radius: var(--rf-border-radius-lg);
+    overflow: hidden;
+    
+    .el-dialog__header {
+      background-color: rgba(var(--rf-primary-rgb), 0.05);
+      padding: 20px;
+      
+      @media (prefers-color-scheme: dark) {
+        background-color: rgba(255, 255, 255, 0.03);
+      }
+      
+      .el-dialog__title {
+        font-weight: 600;
+      }
+    }
+    
+    .el-dialog__body {
+      padding: 20px;
+    }
+    
+    .el-dialog__footer {
+      padding: 15px 20px 20px;
+      border-top: 1px solid var(--rf-border-color-light);
+      
+      @media (prefers-color-scheme: dark) {
+        border-top: 1px solid var(--rf-border-color-dark);
       }
     }
   }

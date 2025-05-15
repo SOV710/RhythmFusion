@@ -1,3 +1,3 @@
 <template>
-  <BaseMain msg="Welcome to Rhythm Fusion Site!" />
+  <BaseMain msg="Welcome to the Future of Music" />
 </template>
