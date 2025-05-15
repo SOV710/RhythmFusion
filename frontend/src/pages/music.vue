@@ -336,6 +336,33 @@ async function addToSelectedPlaylists() {
 <style scoped lang="scss">
 @import '@/styles/components/base.scss';
 
+.navigation-menu {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+
+  .nav-button {
+    font-weight: 500;
+    padding: 0.5rem 1.25rem;
+    border: none;
+    background: linear-gradient(90deg, var(--rf-primary) 0%, var(--rf-secondary) 100%);
+    box-shadow: 0 4px 15px rgba(var(--rf-primary-rgb), 0.3);
+    color: white;
+    transition: all 0.3s ease;
+
+    &:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 20px rgba(var(--rf-primary-rgb), 0.4);
+    }
+
+    &:active {
+      transform: translateY(-1px);
+    }
+  }
+}
+
+
 .content-container {
   max-width: 1200px;
   margin: 0 auto;
