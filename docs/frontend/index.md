@@ -4,7 +4,7 @@
 
 ## 前端架构概述
 
-RhythmFusion 前端基于 Vue 3.5.13 和 TypeScript 构建，采用 Vite 作为构建工具，Pinia 进行状态管理，Axios 处理 HTTP 请求。整体架构遵循组件化设计，实现了响应式布局，确保在不同设备上都能提供良好的用户体验。
+RhythmFusion 前端基于 Vue 3.5.13 和 TypeScript 构建，采用 Vite 6.2.4 作为构建工具，Pinia 3.0.1 进行状态管理，Axios 处理 HTTP 请求。整体架构遵循组件化设计，实现了响应式布局，确保在不同设备上都能提供良好的用户体验。
 
 ```mermaid
 graph TD
@@ -14,7 +14,7 @@ graph TD
     Pinia[Pinia 状态管理]
     Axios[Axios HTTP客户端]
     Router[Vue Router]
-    
+  
     Vue --> Components[组件系统]
     Vue --> Router
     Vue --> Pinia
@@ -32,6 +32,8 @@ graph TD
 frontend/
 ├── src/                    # 源代码目录
 │   ├── api/                # API 接口封装
+│   │   ├── interceptors/   # 拦截器
+│   │   └── modules/        # API 模块
 │   ├── assets/             # 静态资源
 │   ├── components/         # Vue 组件
 │   ├── composables/        # 组合式函数
@@ -40,7 +42,6 @@ frontend/
 │   ├── stores/             # Pinia 状态仓库
 │   ├── styles/             # 全局样式
 │   ├── types/              # TypeScript 类型定义
-│   ├── utils/              # 工具函数
 │   ├── App.vue             # 根组件
 │   └── main.ts             # 入口文件
 ├── public/                 # 公共资源
@@ -59,7 +60,6 @@ frontend/
 RhythmFusion 前端由以下核心组件构成：
 
 - **BaseHeader**: 顶部导航栏，包含搜索框和用户菜单
-- **BaseSide**: 侧边栏，显示歌单列表和导航选项
 - **BaseMain**: 主内容区域，展示歌曲列表和播放器
 - **LoginDialog**: 登录对话框
 - **SignupDialog**: 注册对话框
@@ -79,14 +79,11 @@ RhythmFusion 前端由以下核心组件构成：
 
 ### 3. API 服务
 
-详见 [API 服务文档](api.md)
+前端使用 Axios 封装 API 请求，主要包含以下几个服务模块：
 
-使用 Axios 封装 API 请求，主要包含以下几个服务模块：
-
-- **authAPI**: 处理用户认证相关请求
-- **musicAPI**: 处理歌曲相关请求
-- **playlistAPI**: 处理歌单相关请求
-- **recommendAPI**: 处理推荐相关请求
+- **user**: 处理用户认证相关请求
+- **music**: 处理歌曲相关请求
+- **playlist**: 处理歌单相关请求
 
 ## 用户界面设计
 
@@ -100,15 +97,13 @@ graph TD
     Music[音乐列表页]
     Playlist[歌单详情页]
     Search[搜索结果页]
-    
+  
     Login --> Home
     Home --> Music
     Home --> Playlist
     Home --> Search
     end
 ```
-
-详细的用户界面设计和交互说明，请参考 [用户界面文档](ui.md)。
 
 ## 前端技术细节
 
@@ -122,12 +117,12 @@ export default defineComponent({
   setup() {
     const userStore = useUserStore();
     const songs = ref([]);
-    
+  
     // 计算属性
     const filteredSongs = computed(() => 
       songs.value.filter(song => song.artist.includes(userStore.preference))
     );
-    
+  
     // 异步数据加载
     onMounted(async () => {
       try {
@@ -136,7 +131,7 @@ export default defineComponent({
         console.error('Failed to fetch songs:', error);
       }
     });
-    
+  
     return {
       songs,
       filteredSongs
@@ -182,8 +177,8 @@ router.beforeEach((to, from, next) => {
 
 ```typescript
 // Axios 配置与拦截器
-const api = axios.create({
-  baseURL: '/api',
+const client = axios.create({
+  baseURL: 'http://127.0.0.1:8000',
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json'
@@ -191,32 +186,15 @@ const api = axios.create({
 });
 
 // 请求拦截器
-api.interceptors.request.use(config => {
-  const token = localStorage.getItem('token');
-  if (token) {
-    config.headers.Authorization = `Token ${token}`;
-  }
-  return config;
-});
+setupAuthInterceptor(client);
 
 // 响应拦截器
-api.interceptors.response.use(
-  response => response,
-  error => {
-    if (error.response && error.response.status === 401) {
-      // 处理认证失败
-      const userStore = useUserStore();
-      userStore.logout();
-      router.push('/login');
-    }
-    return Promise.reject(error);
-  }
-);
+setupErrorInterceptor(client);
 ```
 
 ## 前端开发指南
 
-如果您想参与 RhythmFusion 前端开发，请参考 [前端开发指南](development.md)，其中包含本地开发环境设置、代码规范和贡献流程等信息。
+如果您想参与 RhythmFusion 前端开发，请参考前端开发文档目录下的指南，其中包含本地开发环境设置、代码规范和贡献流程等信息。
 
 ## 性能优化
 
@@ -226,7 +204,7 @@ RhythmFusion 前端实施了多项性能优化措施：
 2. **资源预加载**: 关键资源预加载提升体验
 3. **组件懒加载**: 非关键组件延迟加载
 4. **状态缓存**: 利用 Pinia 持久化状态减少请求
-5. **虚拟列表**: 长列表使用虚拟滚动提升性能
+5. **Element Plus 组件库**: 使用高性能的 UI 组件库
 
 ## 浏览器兼容性
 
@@ -245,5 +223,3 @@ RhythmFusion 前端支持以下现代浏览器：
 - [状态管理](state.md)
 - [路由设计](routing.md)
 - [开发者文档](dev/index.md)
-  - [Axios 模块](dev/axios/index.md)
-  - [Pinia 模块](dev/pinia/index.md) 

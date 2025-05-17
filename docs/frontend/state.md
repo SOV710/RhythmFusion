@@ -4,653 +4,383 @@
 
 ## 状态管理概述
 
-RhythmFusion 使用 Pinia 作为前端状态管理解决方案，相比传统的 Vuex，Pinia 提供了更好的 TypeScript 支持、更简洁的 API 以及更好的性能表现。系统将应用状态分为多个独立的仓库（Store），每个仓库负责特定的功能域。
+RhythmFusion 使用 Pinia 3.0.1 作为前端状态管理解决方案，相比传统的 Vuex，Pinia 提供了更好的 TypeScript 支持、更简洁的 API 以及更好的性能表现。系统将应用状态分为多个独立的仓库（Store），每个仓库负责特定的功能域。
 
 ```mermaid
 graph TD
     App[Vue应用] --> UserStore[用户状态仓库]
     App --> PlaylistStore[歌单状态仓库]
-    App --> PlayerStore[播放器状态仓库]
-    App --> UIStore[界面状态仓库]
-    
-    UserStore --> AuthPlugin[持久化插件]
-    PlaylistStore --> CachePlugin[缓存插件]
-    PlayerStore --> LocalStoragePlugin[本地存储插件]
+    App --> MusicStore[音乐状态仓库]
 ```
 
 ## 状态仓库组织
 
 系统的状态仓库位于 `src/stores` 目录下，主要包含以下几个核心仓库：
 
-### 1. 用户状态仓库 (userStore)
+### 1. 用户状态仓库 (useUserStore)
 
 管理用户的登录状态、个人信息和权限控制。
 
 ```typescript
 // src/stores/user.ts
-import { defineStore } from 'pinia';
-import { User } from '@/types/user';
-import { login, logout, register, getProfile } from '@/api/auth';
+import { defineStore } from 'pinia'
+import { ref, computed } from 'vue'
+import * as userApi from '@/api/modules/user'
+import type { LoginPayload, RegisterPayload, User } from '@/api/modules/user'
+import { ElMessage } from 'element-plus'
 
-export const useUserStore = defineStore('user', {
-  state: () => ({
-    currentUser: null as User | null,
-    token: null as string | null,
-    isLoading: false,
-    error: null as string | null
-  }),
-  
-  getters: {
-    isLoggedIn: (state) => !!state.token,
-    username: (state) => state.currentUser?.username || 'Guest',
-    userAvatar: (state) => state.currentUser?.avatar || '/default-avatar.png'
-  },
-  
-  actions: {
-    async login(username: string, password: string) {
-      this.isLoading = true;
-      this.error = null;
-      
-      try {
-        const response = await login(username, password);
-        this.token = response.token;
-        this.currentUser = response.user;
-        localStorage.setItem('token', response.token);
-        return true;
-      } catch (err) {
-        this.error = err.message || '登录失败';
-        return false;
-      } finally {
-        this.isLoading = false;
-      }
-    },
-    
-    async logout() {
-      try {
-        if (this.token) {
-          await logout();
-        }
-      } finally {
-        this.token = null;
-        this.currentUser = null;
-        localStorage.removeItem('token');
-      }
-    },
-    
-    async fetchUserProfile() {
-      if (!this.token) return;
-      
-      try {
-        const profile = await getProfile();
-        this.currentUser = profile;
-      } catch (err) {
-        console.error('Failed to fetch profile:', err);
-        // 如果是401错误，则登出
-        if (err.response?.status === 401) {
-          this.logout();
-        }
-      }
-    },
-    
-    initFromLocalStorage() {
-      const token = localStorage.getItem('token');
-      if (token) {
-        this.token = token;
-        this.fetchUserProfile();
-      }
+export const useUserStore = defineStore(
+  'user',
+  () => {
+    // 初始从 localStorage 读取
+    const accessToken = ref<string>(localStorage.getItem('access_token') || '')
+    const refreshToken = ref<string>(localStorage.getItem('refresh_token') || '')
+
+    // 用户资料
+    const profile = ref<User | null>(null)
+    const profileLoading = ref(false)
+
+    // 登录表单数据
+    const loginForm = ref<LoginPayload>({
+      username: '',
+      password: ''
+    })
+    const loginLoading = ref(false)
+
+    // 注册表单数据
+    const registerForm = ref<RegisterPayload>({
+      username: '',
+      email: '',
+      password: ''
+    })
+    const registerLoading = ref(false)
+
+    // 是否已登录
+    const isAuthenticated = computed(() => !!accessToken.value)
+
+    // 设置并持久化 tokens
+    function setTokens(access: string, refresh: string) {
+      // token存储逻辑
+    }
+
+    // 清除 tokens
+    function clearTokens() {
+      // 清除token逻辑
+    }
+
+    // 登录逻辑
+    async function handleLogin() {
+      // 登录实现
+    }
+
+    // 注册逻辑
+    async function handleRegister() {
+      // 注册实现
+    }
+
+    // 登出逻辑
+    async function handleLogout() {
+      // 登出实现
+    }
+
+    // 获取用户资料
+    async function fetchProfile() {
+      // 获取用户资料实现
+    }
+
+    // 更新用户资料
+    async function updateProfile(formData: FormData) {
+      // 更新用户资料实现
+    }
+
+    // 重置表单方法
+    function resetLoginForm() {}
+    function resetRegisterForm() {}
+
+    return {
+      accessToken,
+      refreshToken,
+      profile,
+      profileLoading,
+      loginForm,
+      loginLoading,
+      registerForm,
+      registerLoading,
+      isAuthenticated,
+      handleLogin,
+      handleRegister,
+      handleLogout,
+      fetchProfile,
+      updateProfile,
+      resetLoginForm,
+      resetRegisterForm
     }
   }
-});
+)
 ```
 
-### 2. 歌单状态仓库 (playlistStore)
+### 2. 歌单状态仓库 (usePlaylistStore)
 
 管理用户歌单列表、歌单详情和相关操作。
 
 ```typescript
 // src/stores/playlist.ts
-import { defineStore } from 'pinia';
-import { Playlist, Song } from '@/types/music';
-import { 
-  getUserPlaylists, 
-  getPlaylistDetail,
-  createPlaylist,
-  addSongToPlaylist,
-  removeSongFromPlaylist 
-} from '@/api/playlist';
+import { defineStore } from 'pinia'
+import { ref } from 'vue'
+import * as playlistApi from '@/api/modules/playlist'
+import type { Playlist, Track } from '@/api/modules/playlist'
+import type { Song } from '@/api/modules/music'
+import { ElMessage } from 'element-plus'
 
-export const usePlaylistStore = defineStore('playlist', {
-  state: () => ({
-    playlists: [] as Playlist[],
-    currentPlaylist: null as Playlist | null,
-    isLoading: false,
-    error: null as string | null
-  }),
-  
-  getters: {
-    userPlaylists: (state) => state.playlists,
-    currentPlaylistSongs: (state) => state.currentPlaylist?.songs || []
-  },
-  
-  actions: {
-    async fetchUserPlaylists() {
-      this.isLoading = true;
-      
-      try {
-        const playlists = await getUserPlaylists();
-        this.playlists = playlists;
-      } catch (err) {
-        console.error('Failed to fetch playlists:', err);
-        this.error = '获取歌单失败';
-      } finally {
-        this.isLoading = false;
-      }
-    },
-    
-    async fetchPlaylistDetail(id: number) {
-      this.isLoading = true;
-      
-      try {
-        const playlist = await getPlaylistDetail(id);
-        this.currentPlaylist = playlist;
-        
-        // 更新缓存中对应的歌单
-        const index = this.playlists.findIndex(p => p.id === id);
-        if (index !== -1) {
-          this.playlists[index] = playlist;
-        }
-      } catch (err) {
-        console.error(`Failed to fetch playlist ${id}:`, err);
-        this.error = '获取歌单详情失败';
-      } finally {
-        this.isLoading = false;
-      }
-    },
-    
-    async createNewPlaylist(name: string, description: string = '') {
-      try {
-        const newPlaylist = await createPlaylist({ name, description });
-        this.playlists.push(newPlaylist);
-        return newPlaylist;
-      } catch (err) {
-        console.error('Failed to create playlist:', err);
-        this.error = '创建歌单失败';
-        return null;
-      }
-    },
-    
-    async addSongToCurrentPlaylist(song: Song) {
-      if (!this.currentPlaylist) return false;
-      
-      try {
-        await addSongToPlaylist(this.currentPlaylist.id, song.id);
-        
-        // 更新当前歌单
-        if (!this.currentPlaylist.songs.some(s => s.id === song.id)) {
-          this.currentPlaylist.songs.push(song);
-        }
-        
-        return true;
-      } catch (err) {
-        console.error('Failed to add song to playlist:', err);
-        this.error = '添加歌曲失败';
-        return false;
-      }
-    },
-    
-    async removeSongFromCurrentPlaylist(songId: number) {
-      if (!this.currentPlaylist) return false;
-      
-      try {
-        await removeSongFromPlaylist(this.currentPlaylist.id, songId);
-        
-        // 更新当前歌单
-        this.currentPlaylist.songs = this.currentPlaylist.songs.filter(
-          s => s.id !== songId
-        );
-        
-        return true;
-      } catch (err) {
-        console.error('Failed to remove song from playlist:', err);
-        this.error = '移除歌曲失败';
-        return false;
-      }
-    }
+export const usePlaylistStore = defineStore('playlist', () => {
+  // 存储当前用户的所有歌单，key 为 playlist.id
+  const playlists = ref<Record<number, Playlist>>({})
+
+  // 存储各歌单中的曲目列表，key 为 playlist.id
+  const playlistTracks = ref<Record<number, Track[]>>({})
+
+  // "选中"功能：用于批量添加曲目，存放 song.id 列表
+  const selectedSongIds = ref<number[]>([])
+
+  // 获取所有歌单
+  async function fetchPlaylists() {
+    // 实现获取歌单逻辑
   }
-});
+
+  // 获取歌单中的曲目
+  async function fetchTracks(playlistId: number) {
+    // 实现获取歌曲逻辑
+  }
+
+  // 创建歌单
+  async function createPlaylist(name: string) {
+    // 实现创建歌单逻辑
+  }
+
+  // 添加曲目到歌单
+  async function addTracks(playlistId: number) {
+    // 实现添加曲目逻辑
+  }
+
+  // 添加单个歌曲到歌单
+  async function addTrackToPlaylist(playlistId: number, songId: number) {
+    // 实现添加单个歌曲逻辑
+  }
+
+  // 从歌单删除曲目
+  async function deleteTrack(playlistId: number, songId: number) {
+    // 实现删除曲目逻辑
+  }
+
+  // 获取歌单推荐
+  async function recommend(playlistId: number): Promise<Song[]> {
+    // 实现获取推荐逻辑
+  }
+
+  return {
+    playlists,
+    playlistTracks,
+    selectedSongIds,
+    fetchPlaylists,
+    fetchTracks,
+    createPlaylist,
+    addTracks,
+    addTrackToPlaylist,
+    deleteTrack,
+    recommend,
+    setPlaylists,
+    setPlaylistTracks,
+    toggleSongSelection,
+    clearSongSelection,
+  }
+})
 ```
 
-### 3. 播放器状态仓库 (playerStore)
+### 3. 音乐状态仓库 (useMusicStore)
 
-管理音乐播放状态、播放列表和控制逻辑。
+管理音乐播放、收藏和操作状态。
 
 ```typescript
-// src/stores/player.ts
-import { defineStore } from 'pinia';
-import { Song } from '@/types/music';
+// src/stores/music.ts
+import { defineStore } from 'pinia'
+import { ref } from 'vue'
+import { likeSong, unlikeSong, getLikedSongs } from '@/api/modules/music'
+import { ElMessage } from 'element-plus'
+import type { Song } from '@/api/modules/music'
 
-export const usePlayerStore = defineStore('player', {
-  state: () => ({
-    currentSong: null as Song | null,
-    playlist: [] as Song[],
-    isPlaying: false,
-    currentTime: 0,
-    duration: 0,
-    volume: 0.8,
-    muted: false,
-    repeatMode: 'none', // none, one, all
-    shuffle: false
-  }),
-  
-  getters: {
-    progress: (state) => {
-      if (!state.duration) return 0;
-      return (state.currentTime / state.duration) * 100;
-    },
-    
-    formattedCurrentTime: (state) => {
-      return formatTime(state.currentTime);
-    },
-    
-    formattedDuration: (state) => {
-      return formatTime(state.duration);
-    }
-  },
-  
-  actions: {
-    playSong(song: Song) {
-      this.currentSong = song;
-      this.isPlaying = true;
-      
-      // 将播放状态保存到本地存储
-      this.savePlayerState();
-    },
-    
-    playPlaylist(songs: Song[], startIndex: number = 0) {
-      if (!songs.length) return;
-      
-      this.playlist = [...songs];
-      this.currentSong = songs[startIndex];
-      this.isPlaying = true;
-      
-      this.savePlayerState();
-    },
-    
-    togglePlay() {
-      this.isPlaying = !this.isPlaying;
-      this.savePlayerState();
-    },
-    
-    pause() {
-      this.isPlaying = false;
-    },
-    
-    resume() {
-      if (this.currentSong) {
-        this.isPlaying = true;
-      }
-    },
-    
-    nextSong() {
-      if (!this.playlist.length) return;
-      
-      let currentIndex = this.currentSong 
-        ? this.playlist.findIndex(s => s.id === this.currentSong!.id)
-        : -1;
-      
-      if (this.shuffle) {
-        // 随机播放
-        let nextIndex;
-        do {
-          nextIndex = Math.floor(Math.random() * this.playlist.length);
-        } while (nextIndex === currentIndex && this.playlist.length > 1);
-        
-        this.currentSong = this.playlist[nextIndex];
-      } else {
-        // 顺序播放
-        const nextIndex = (currentIndex + 1) % this.playlist.length;
-        this.currentSong = this.playlist[nextIndex];
-      }
-      
-      this.isPlaying = true;
-      this.savePlayerState();
-    },
-    
-    prevSong() {
-      if (!this.playlist.length) return;
-      
-      let currentIndex = this.currentSong 
-        ? this.playlist.findIndex(s => s.id === this.currentSong!.id)
-        : -1;
-      
-      if (this.shuffle) {
-        // 随机播放
-        let prevIndex;
-        do {
-          prevIndex = Math.floor(Math.random() * this.playlist.length);
-        } while (prevIndex === currentIndex && this.playlist.length > 1);
-        
-        this.currentSong = this.playlist[prevIndex];
-      } else {
-        // 顺序播放，如果是第一首则循环到最后一首
-        const prevIndex = currentIndex <= 0 
-          ? this.playlist.length - 1
-          : currentIndex - 1;
-        
-        this.currentSong = this.playlist[prevIndex];
-      }
-      
-      this.isPlaying = true;
-      this.savePlayerState();
-    },
-    
-    updateCurrentTime(time: number) {
-      this.currentTime = time;
-    },
-    
-    updateDuration(duration: number) {
-      this.duration = duration;
-    },
-    
-    setVolume(volume: number) {
-      this.volume = volume;
-      this.savePlayerState();
-    },
-    
-    toggleMute() {
-      this.muted = !this.muted;
-      this.savePlayerState();
-    },
-    
-    toggleRepeatMode() {
-      if (this.repeatMode === 'none') {
-        this.repeatMode = 'all';
-      } else if (this.repeatMode === 'all') {
-        this.repeatMode = 'one';
-      } else {
-        this.repeatMode = 'none';
-      }
-      this.savePlayerState();
-    },
-    
-    toggleShuffle() {
-      this.shuffle = !this.shuffle;
-      this.savePlayerState();
-    },
-    
-    savePlayerState() {
-      const state = {
-        volume: this.volume,
-        muted: this.muted,
-        repeatMode: this.repeatMode,
-        shuffle: this.shuffle,
-        currentSongId: this.currentSong?.id
-      };
-      
-      localStorage.setItem('playerState', JSON.stringify(state));
-    },
-    
-    loadPlayerState() {
-      const stateJson = localStorage.getItem('playerState');
-      if (stateJson) {
-        try {
-          const state = JSON.parse(stateJson);
-          this.volume = state.volume ?? 0.8;
-          this.muted = state.muted ?? false;
-          this.repeatMode = state.repeatMode ?? 'none';
-          this.shuffle = state.shuffle ?? false;
-          
-          // 如果有歌曲ID，可以在加载歌曲列表后恢复当前歌曲
-          // (需要在歌曲列表加载后单独处理)
-        } catch (err) {
-          console.error('Failed to parse player state:', err);
-        }
-      }
-    }
+export const useMusicStore = defineStore('music', () => {
+  // 创建歌曲时的"选中"功能，存放 song.id 列表
+  const selectedSongIds = ref<number[]>([])
+  // 用于歌单创建的选中歌曲缓冲区
+  const playlistSongBuffer = ref<Song[]>([])
+  // 用户喜欢的歌曲ID列表
+  const likedSongIds = ref<number[]>([])
+  // 用户喜欢的歌曲完整信息
+  const likedSongs = ref<Song[]>([])
+  // 操作中的歌曲ID列表（防止重复操作）
+  const loadingIds = ref<number[]>([])
+  // 是否正在加载喜欢的歌曲列表
+  const isLoadingLikes = ref(false)
+
+  // 喜欢/取消喜欢歌曲
+  async function handleLikeSong(songId: number) {
+    // 实现喜欢/取消喜欢歌曲逻辑
   }
-});
 
-// 辅助函数
-function formatTime(seconds: number): string {
-  const mins = Math.floor(seconds / 60);
-  const secs = Math.floor(seconds % 60);
-  return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+  // 从服务器获取喜欢的歌曲列表
+  async function fetchLikedSongs() {
+    // 实现获取喜欢歌曲列表逻辑
+  }
+
+  // 歌曲选择与缓冲区管理
+  function toggleSongSelection(songId: number) {}
+  function toggleSongInBuffer(song: Song) {}
+  function isSongInBuffer(songId: number): boolean {}
+  function clearSongBuffer() {}
+  function getSelectedSongCount(): number {}
+  function getSelectedSongIds(): number[] {}
+  function clearSelection() {}
+
+  // 歌曲状态查询
+  function isSongLiked(songId: number): boolean {}
+  function isSongLoading(songId: number): boolean {}
+
+  return {
+    selectedSongIds,
+    likedSongIds,
+    likedSongs,
+    loadingIds,
+    isLoadingLikes,
+    playlistSongBuffer,
+    toggleSongSelection,
+    clearSelection,
+    isSongLiked,
+    isSongLoading,
+    handleLikeSong,
+    fetchLikedSongs,
+    setLikedSongs,
+    toggleSongInBuffer,
+    isSongInBuffer,
+    clearSongBuffer,
+    getSelectedSongCount,
+    getSelectedSongIds
+  }
+})
+```
+
+## 状态仓库的使用
+
+### 在组件中使用状态仓库
+
+使用 Composition API 风格在组件中引用和使用状态仓库：
+
+```vue
+<script setup lang="ts">
+import { useUserStore } from '@/stores/user'
+import { usePlaylistStore } from '@/stores/playlist'
+import { useMusicStore } from '@/stores/music'
+import { onMounted } from 'vue'
+
+// 初始化状态仓库
+const userStore = useUserStore()
+const playlistStore = usePlaylistStore()
+const musicStore = useMusicStore()
+
+// 在组件挂载时加载数据
+onMounted(async () => {
+  // 检查登录状态
+  if (userStore.isAuthenticated) {
+    // 加载用户资料
+    await userStore.fetchProfile()
+    // 加载用户歌单
+    await playlistStore.fetchPlaylists()
+    // 加载喜欢的歌曲
+    await musicStore.fetchLikedSongs()
+  }
+})
+
+// 处理登录操作
+async function login() {
+  const success = await userStore.handleLogin()
+  if (success) {
+    // 登录成功后加载用户数据
+    await userStore.fetchProfile()
+    await playlistStore.fetchPlaylists()
+    await musicStore.fetchLikedSongs()
+  }
+}
+</script>
+```
+
+### 状态仓库间的交互
+
+状态仓库间的交互主要通过在组件中组合调用各个仓库的方法来实现，例如：
+
+```typescript
+// 创建歌单并添加歌曲
+async function createPlaylistWithSongs() {
+  const musicStore = useMusicStore()
+  const playlistStore = usePlaylistStore()
+  
+  // 1. 创建歌单
+  const playlist = await playlistStore.createPlaylist('我的新歌单')
+  
+  // 2. 从音乐仓库获取选中的歌曲ID
+  const songIds = musicStore.getSelectedSongIds()
+  
+  // 3. 添加歌曲到歌单
+  for (const songId of songIds) {
+    await playlistStore.addTrackToPlaylist(playlist.id, songId)
+  }
+  
+  // 4. 清空音乐仓库的选中状态
+  musicStore.clearSongBuffer()
 }
 ```
 
-### 4. 界面状态仓库 (uiStore)
+## 持久化策略
 
-管理应用界面状态，如主题、对话框、通知等。
+应用使用 localStorage 实现简单的状态持久化：
 
 ```typescript
-// src/stores/ui.ts
-import { defineStore } from 'pinia';
-
-export const useUIStore = defineStore('ui', {
-  state: () => ({
-    theme: 'light',
-    sidebarCollapsed: false,
-    activeDialog: null as string | null,
-    notification: null as {
-      message: string;
-      type: 'success' | 'error' | 'info' | 'warning';
-    } | null,
-    history: [] as string[]
-  }),
+// 在 userStore 中持久化 token
+function setTokens(access: string, refresh: string) {
+  // 存储到 localStorage
+  localStorage.setItem('access_token', access)
+  localStorage.setItem('refresh_token', refresh)
   
-  getters: {
-    isDarkMode: (state) => state.theme === 'dark'
-  },
+  // 更新状态
+  accessToken.value = access
+  refreshToken.value = refresh
+}
+
+// 在组件或应用初始化时检查并恢复状态
+function initializeApp() {
+  const userStore = useUserStore()
   
-  actions: {
-    toggleTheme() {
-      this.theme = this.theme === 'light' ? 'dark' : 'light';
-      document.documentElement.setAttribute('data-theme', this.theme);
-      localStorage.setItem('theme', this.theme);
-    },
-    
-    toggleSidebar() {
-      this.sidebarCollapsed = !this.sidebarCollapsed;
-    },
-    
-    openDialog(dialogName: string) {
-      this.activeDialog = dialogName;
-    },
-    
-    closeDialog() {
-      this.activeDialog = null;
-    },
-    
-    showNotification(message: string, type: 'success' | 'error' | 'info' | 'warning' = 'info') {
-      this.notification = { message, type };
-      
-      // 自动关闭通知
-      setTimeout(() => {
-        if (this.notification && this.notification.message === message) {
-          this.notification = null;
-        }
-      }, 3000);
-    },
-    
-    clearNotification() {
-      this.notification = null;
-    },
-    
-    addToHistory(path: string) {
-      // 保存最近的10条历史记录
-      this.history.unshift(path);
-      if (this.history.length > 10) {
-        this.history = this.history.slice(0, 10);
-      }
-    },
-    
-    loadSavedTheme() {
-      const savedTheme = localStorage.getItem('theme') || 'light';
-      this.theme = savedTheme;
-      document.documentElement.setAttribute('data-theme', savedTheme);
-    }
-  }
-});
-```
-
-## Pinia 插件
-
-RhythmFusion 使用了几个 Pinia 插件来增强状态管理功能：
-
-### 1. 持久化插件
-
-使用 `pinia-plugin-persistedstate` 实现状态持久化：
-
-```typescript
-// src/stores/plugins/persistedState.ts
-import { createPersistedState } from 'pinia-plugin-persistedstate';
-
-export const piniaPersistedState = createPersistedState({
-  key: prefix => `rhythmfusion-${prefix}`,
-  storage: localStorage
-});
-```
-
-配置示例：
-
-```typescript
-import { defineStore } from 'pinia';
-
-export const useUserStore = defineStore('user', {
-  state: () => ({
-    // 状态...
-  }),
+  // 从 localStorage 读取 token
+  const accessToken = localStorage.getItem('access_token')
+  const refreshToken = localStorage.getItem('refresh_token')
   
-  // 持久化配置
-  persist: {
-    paths: ['token', 'currentUser'],
-    storage: localStorage
-  }
-});
-```
-
-### 2. 调试插件
-
-开发环境中使用调试插件监控状态变化：
-
-```typescript
-// src/stores/plugins/debug.ts
-import { PiniaPluginContext } from 'pinia';
-
-export function piniaDebugPlugin({ store, options }: PiniaPluginContext) {
-  if (process.env.NODE_ENV === 'development') {
-    store.$subscribe((mutation, state) => {
-      console.log(`[${options.id}] ${mutation.type}`, mutation.payload);
-    });
+  if (accessToken && refreshToken) {
+    // 恢复登录状态
+    userStore.setTokens(accessToken, refreshToken)
+    // 获取用户信息
+    userStore.fetchProfile()
   }
 }
 ```
 
-## 状态初始化流程
+## 最佳实践
 
-应用启动时，状态初始化的主要流程如下：
+1. **组合式API**: 使用 Composition API 风格定义状态仓库，提高代码可读性和类型安全。
 
-```mermaid
-sequenceDiagram
-    participant App as 应用启动
-    participant UI as UI状态仓库
-    participant User as 用户状态仓库
-    participant Player as 播放器状态仓库
-    participant API as 后端API
-    
-    App->>UI: loadSavedTheme()
-    App->>User: initFromLocalStorage()
-    User->>User: 从localStorage获取token
-    User->>API: 检查token有效性
-    API-->>User: 返回用户信息或错误
-    User->>User: 更新用户状态
-    App->>Player: loadPlayerState()
-    Player->>Player: 从localStorage恢复播放器设置
-```
+2. **状态隔离**: 将不同领域的状态分离到不同的仓库中，避免状态混乱。
 
-## 状态访问模式
+3. **计算属性**: 使用计算属性派生状态，而不是存储冗余状态。
 
-在组件中访问状态仓库的常见模式：
+4. **异步操作**: 在 action 中处理所有异步操作，保持状态变更的可预测性。
 
-### 选项式 API
+5. **错误处理**: 统一处理API错误，使用 ElMessage 等组件显示友好的错误提示。
 
-```js
-import { useUserStore } from '@/stores/user';
-
-export default {
-  computed: {
-    username() {
-      const userStore = useUserStore();
-      return userStore.username;
-    }
-  },
-  
-  methods: {
-    async handleLogin() {
-      const userStore = useUserStore();
-      const success = await userStore.login(this.username, this.password);
-      
-      if (success) {
-        this.$router.push('/home');
-      }
-    }
-  }
-}
-```
-
-### 组合式 API
-
-```js
-import { defineComponent } from 'vue';
-import { useUserStore } from '@/stores/user';
-import { usePlaylistStore } from '@/stores/playlist';
-import { storeToRefs } from 'pinia';
-
-export default defineComponent({
-  setup() {
-    const userStore = useUserStore();
-    const playlistStore = usePlaylistStore();
-    
-    // 使用 storeToRefs 保持响应性
-    const { currentUser, isLoggedIn } = storeToRefs(userStore);
-    const { playlists, currentPlaylist } = storeToRefs(playlistStore);
-    
-    // 方法可以直接引用
-    const { login, logout } = userStore;
-    const { fetchUserPlaylists, createNewPlaylist } = playlistStore;
-    
-    // 组件挂载时加载歌单
-    onMounted(() => {
-      if (isLoggedIn.value) {
-        fetchUserPlaylists();
-      }
-    });
-    
-    return {
-      // 响应式状态
-      currentUser,
-      isLoggedIn,
-      playlists,
-      currentPlaylist,
-      
-      // 方法
-      login,
-      logout,
-      fetchUserPlaylists,
-      createNewPlaylist
-    };
-  }
-});
-```
-
-## 状态管理最佳实践
-
-在 RhythmFusion 项目中使用 Pinia 状态管理时，请遵循以下最佳实践：
-
-1. **状态隔离**: 将状态按功能域划分到不同仓库中，避免单个仓库过于庞大
-2. **计算属性**: 使用 getters 派生计算值，而非在组件中重复计算
-3. **异步处理**: 在 actions 中处理所有异步操作，包括 API 调用
-4. **错误处理**: 妥善处理异步操作的错误，提供友好的用户反馈
-5. **持久化策略**: 只持久化必要的状态，避免敏感信息泄露
-6. **状态重置**: 提供清晰的状态重置机制，特别是用户登出时
-7. **类型安全**: 充分利用 TypeScript 类型系统，增强代码健壮性 
+6. **状态重置**: 提供明确的方法重置状态，避免状态污染。 

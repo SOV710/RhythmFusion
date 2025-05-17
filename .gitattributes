@@ -1,0 +1,4 @@
+# enforce CRLF on .ps1 files, but normalize others to LF
+*.ps1 text eol=crlf
+*      text eol=lf
+

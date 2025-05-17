@@ -9,6 +9,7 @@ RhythmFusion 需要以下数据才能正常运行推荐系统：
 ### 歌曲元数据
 
 每首歌曲需要包含以下基本信息：
+
 - 歌曲名称 (title)
 - 艺术家 (artist)
 - 音乐流派/学派 (school)
@@ -72,7 +73,6 @@ mysql -u root -p music_recommendation < scripts/mysql_backup.sql
 1. **准备 CSV 文件**：
 
    从音乐平台（如 [TuneMyMusic](https://www.tunemymusic.com/home)）导出歌单为 CSV 格式，并按照 `{school}_{序号}.csv` 命名规则将文件放入 `scripts/input/` 目录。
-
 2. **转换为 JSON 格式**：
 
    ```bash
@@ -81,18 +81,21 @@ mysql -u root -p music_recommendation < scripts/mysql_backup.sql
    ```
 
    这将处理 `input/` 目录中的所有 CSV 文件，生成的 JSON 文件将保存到 `output/` 目录。
-
 3. **上传数据**：
 
    ```bash
    # 赋予脚本执行权限
    chmod +x upload.sh
-   
+
    # 执行上传脚本
    ./upload.sh
+
+   # Windows
+   powershell .\upload.ps1
    ```
 
    > 注意：如果您的 Django 服务不在 127.0.0.1:8000，请修改 `upload.sh` 中的 `API_URL` 变量。
+   >
 
 ## CSV 文件转换细节
 
@@ -119,7 +122,7 @@ def csv_to_json(csv_file, json_file, school=None):
     # 如果没有指定学派，则从文件名推断
     if school is None:
         school = infer_school_from_filename(csv_file)
-    
+  
     # 处理 CSV 数据
     songs = []
     with open(csv_file, 'r', encoding='utf-8') as f:
@@ -131,7 +134,7 @@ def csv_to_json(csv_file, json_file, school=None):
                     'artist': row['Artist name'],
                     'school': school
                 })
-    
+  
     # 写入 JSON 文件
     with open(json_file, 'w', encoding='utf-8') as f:
         json.dump(songs, f, ensure_ascii=False, indent=2)
@@ -172,7 +175,7 @@ cd backend
 python manage.py build_interaction_matrix
 
 # 2. 训练协同过滤模型
-python manage.py train_cf_model --factors 50
+python manage.py train_cf_model --factors 1
 
 # 3. 生成内容特征向量
 python manage.py generate_content_vectors
@@ -185,6 +188,7 @@ python manage.py build_faiss_index
 ```
 
 这些命令将依次：
+
 1. 从用户-歌曲交互记录构建交互矩阵
 2. 使用 SVD 算法训练协同过滤模型
 3. 为每首歌曲生成基于艺术家和流派的内容特征向量
@@ -232,21 +236,22 @@ mysqldump -u root -p music_recommendation > backup_$(date +%Y%m%d).sql
 ### 常见问题
 
 1. **CSV 解析错误**
+
    - 检查 CSV 文件编码是否为 UTF-8
    - 确保列名正确（"Track name" 和 "Artist name"）
    - 检查 CSV 分隔符是否为逗号
-
 2. **上传失败**
+
    - 确认 Django 服务正在运行
    - 检查 API URL 是否正确
    - 验证 JSON 格式是否有效
-
 3. **推荐模型初始化失败**
+
    - 确保已导入足够的歌曲数据
    - 检查是否存在用户交互数据（歌单、喜好记录）
    - 查看 Django 日志以获取详细错误信息
-
 4. **批量导入速度慢**
+
    - 考虑将大量数据分批导入
    - 临时禁用数据库索引再导入后重建
    - 调整 Django 配置以优化批处理性能
@@ -256,4 +261,4 @@ mysqldump -u root -p music_recommendation > backup_$(date +%Y%m%d).sql
 - [数据导入脚本使用说明](../scripts/README.md)
 - [Django 批量操作文档](https://docs.djangoproject.com/en/5.0/ref/models/querysets/#bulk-create)
 - [FAISS 索引指南](https://github.com/facebookresearch/faiss/wiki/Getting-started)
-- [SVD 推荐算法原理](https://en.wikipedia.org/wiki/Singular_value_decomposition) 
+- [SVD 推荐算法原理](https://en.wikipedia.org/wiki/Singular_value_decomposition)
