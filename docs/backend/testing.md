@@ -118,7 +118,7 @@ class TestSongModel:
         # 准备
         artist = Artist.objects.create(name="Test Artist")
         genre = Genre.objects.create(name="Test Genre")
-      
+    
         # 执行
         song = Song.objects.create(
             title="Test Song",
@@ -126,7 +126,7 @@ class TestSongModel:
             genre=genre,
             duration=180
         )
-      
+    
         # 断言
         assert song.title == "Test Song"
         assert song.artist.name == "Test Artist"
@@ -137,7 +137,7 @@ class TestSongModel:
         # 准备
         artist = Artist.objects.create(name="Test Artist")
         song = Song.objects.create(title="Test Song", artist=artist)
-      
+    
         # 执行 & 断言
         assert str(song) == "Test Song by Test Artist"
 ```
@@ -160,10 +160,10 @@ class TestSongSerializer:
             artist=artist,
             duration=180
         )
-      
+    
         # 执行
         serializer = SongSerializer(song)
-      
+    
         # 断言
         assert serializer.data['title'] == "Test Song"
         assert serializer.data['artist_name'] == "Test Artist"
@@ -177,16 +177,16 @@ class TestSongSerializer:
             'artist': artist.id,
             'duration': 240
         }
-      
+    
         # 执行
         serializer = SongSerializer(data=valid_data)
-      
+    
         # 断言
         assert serializer.is_valid()
-      
+    
         # 执行 - 保存序列化器
         song = serializer.save()
-      
+    
         # 断言
         assert song.title == 'New Song'
         assert song.artist.id == artist.id
@@ -267,10 +267,10 @@ class TestPlaylistViews:
         # 准备：模拟登录
         api_client.force_authenticate(user=user)
         url = reverse('playlist-add-song', args=[playlist.id])
-      
+    
         # 执行
         response = api_client.post(url, {'song_id': songs[0].id})
-      
+    
         # 断言
         assert response.status_code == 201
         assert playlist.tracks.count() == 1
@@ -279,10 +279,10 @@ class TestPlaylistViews:
     def test_unauthorized_user_cannot_modify_playlist(self, api_client, playlist, songs):
         # 准备：未登录
         url = reverse('playlist-add-song', args=[playlist.id])
-      
+    
         # 执行
         response = api_client.post(url, {'song_id': songs[0].id})
-      
+    
         # 断言
         assert response.status_code == 401
         assert playlist.tracks.count() == 0
@@ -334,7 +334,7 @@ class TestMusicAPI:
         # 执行
         url = reverse('song-list')
         response = api_client.get(url)
-      
+    
         # 断言
         assert response.status_code == 200
         assert len(response.data['results']) == 5
@@ -343,7 +343,7 @@ class TestMusicAPI:
         # 执行
         url = reverse('song-search')
         response = api_client.get(url, {'query': 'Song 3'})
-      
+    
         # 断言
         assert response.status_code == 200
         assert len(response.data['results']) == 1
@@ -354,7 +354,7 @@ class TestMusicAPI:
         url = reverse('song-list')
         data = {'title': 'New Song', 'duration': 240}
         response = api_client.post(url, data)
-      
+    
         # 断言
         assert response.status_code == 401
   
@@ -363,10 +363,10 @@ class TestMusicAPI:
         api_client.force_authenticate(user=admin_user)
         url = reverse('song-list')
         data = {'title': 'New Song', 'duration': 240}
-      
+    
         # 执行
         response = api_client.post(url, data)
-      
+    
         # 断言
         assert response.status_code == 201
         assert response.data['title'] == 'New Song'
@@ -697,12 +697,12 @@ RhythmFusion 项目遵循以下测试最佳实践：
 
 常见测试问题及解决方案：
 
-| 问题      | 解决方案                             |
-| ------- | -------------------------------- |
-| 测试执行过慢  | 使用 `pytest --durations=10` 找出慢测试 |
-| 数据库错误   | 确保测试夹具正确清理数据库                    |
-| 随机失败    | 检查测试依赖或时序问题                      |
-| 夹具缺失    | 检查夹具的依赖关系和作用域                    |
+| 问题           | 解决方案                                  |
+| -------------- | ----------------------------------------- |
+| 测试执行过慢   | 使用 `pytest --durations=10` 找出慢测试 |
+| 数据库错误     | 确保测试夹具正确清理数据库                |
+| 随机失败       | 检查测试依赖或时序问题                    |
+| 夹具缺失       | 检查夹具的依赖关系和作用域                |
 | 测试维护成本高 | 重构测试以减少重复                        |
 
 ## 开发者测试检查清单
