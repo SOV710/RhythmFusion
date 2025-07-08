@@ -1,47 +1,127 @@
-# RhythmFusion 音乐推荐系统文档
+# RhythmFusion Documentation
 
 <div align="center">
-    <img src="https://via.placeholder.com/200x200.png?text=RhythmFusion" alt="RhythmFusion Logo" width="200"/>
+    <img src="../frontend/src/assets/logo.png" alt="RhythmFusion Logo" width="200"/>
+    <h3>Intelligent Music Discovery & Recommendation Platform</h3>
+    <p>Built with Vue 3 + TypeScript + Django + AI Recommendation Engine</p>
 </div>
 
-## 文档概述
+## Documentation Overview
 
-欢迎使用 RhythmFusion 音乐推荐系统文档！本文档旨在帮助开发者和用户了解和使用 RhythmFusion 系统。RhythmFusion 是一个基于 Django 和 Vue.js 构建的现代化音乐推荐系统，提供个性化推荐、歌单管理及音乐播放功能，为用户创造流畅、智能的音乐体验。
+Welcome to the RhythmFusion Music Recommendation System documentation! This comprehensive resource is designed to help developers, administrators, and users understand, use, and extend the RhythmFusion platform. Whether you want to deploy the system, develop new features, or simply use the platform as an end user, this documentation provides all the necessary information.
 
-## 目录
+RhythmFusion is a modern music recommendation system built with Django and Vue.js, offering personalized recommendations, playlist management, and music playback features. The system employs a hybrid recommendation algorithm combining collaborative filtering and content-based analysis to provide high-quality music recommendations.
 
-1. [系统架构](architecture.md)
-2. [后端文档](backend/index.md)
-   - [API 接口](api_doc.md)
-   - [数据模型](backend/models.md)
-   - [推荐算法](backend/recommendation.md)
-3. [前端文档](frontend/index.md)
-   - [组件结构](frontend/components.md)
-   - [状态管理](frontend/state.md)
-   - [路由设计](frontend/routing.md)
-4. [部署指南](deployment.md)
-5. [数据导入与准备](data_preparation.md)
-6. [开发指南](development.md)
-7. [使用教程](user_guide.md)
+[中文文档](index_zh.md)
 
-## 系统特点
+## Documentation Structure
 
-- **混合推荐算法**：结合协同过滤和内容特征的创新推荐方案
-- **响应式前端**：基于 Vue 3 和 TypeScript 的现代化用户界面
-- **RESTful API**：规范化的后端接口设计
-- **高效索引**：使用 FAISS 向量检索实现快速推荐
-- **可扩展架构**：模块化设计支持功能和规模扩展
+### Core Documentation
 
-## 快速开始
+| Document | Description |
+|----------|-------------|
+| [System Architecture](architecture.md) | Detailed overview of RhythmFusion's architecture, component relationships, and data flow |
+| [API Reference](api_doc.md) | Complete API reference including all endpoints, parameters, and response examples |
+| [Development Guide](development.md) | Development environment setup, code standards, contribution guidelines, and workflows |
+| [User Guide](user_guide.md) | Detailed instructions for system features and user interface |
+| [Deployment Guide](deployment.md) | System deployment steps, environment configuration, and best practices |
+| [Data Preparation](data_preparation.md) | Music data import, processing, and preparation workflows |
 
-如果您想快速开始使用 RhythmFusion，请参考[部署指南](deployment.md)和[使用教程](user_guide.md)。对于开发者，建议先了解[系统架构](architecture.md)和[开发指南](development.md)。
+### Frontend Documentation
 
-## 技术栈概览
+| Document | Description |
+|----------|-------------|
+| [Frontend Overview](frontend/index.md) | Frontend architecture, directory structure, and main technologies |
+| [Component Guide](frontend/components.md) | Detailed component documentation and usage examples |
+| [State Management](frontend/state.md) | Pinia store design and usage patterns |
+| [Routing](frontend/routing.md) | Route structure and navigation implementation |
 
-**前端**：Vue 3.5.13, TypeScript, Vite 6.2.1, Pinia, Axios, SCSS  
-**后端**：Django 5.0.2, Django REST Framework, SQLite/MySQL  
-**推荐系统**：SVD协同过滤, 内容特征提取, FAISS向量检索
+### Backend Documentation
 
-## 贡献
+| Document | Description |
+|----------|-------------|
+| [Backend Overview](backend/index.md) | Backend architecture, directory structure, and main technologies |
+| [Data Models](backend/models.md) | Detailed database model design and relationships |
+| [Recommendation System](backend/recommendation.md) | Recommendation system implementation details and algorithms |
 
-我们欢迎任何形式的贡献，包括但不限于：功能建议、代码贡献、文档改进等。请查看[开发指南](development.md)了解如何参与项目开发。 
+## System Architecture Diagram
+
+The following diagram illustrates the high-level architecture of the RhythmFusion system:
+
+```mermaid
+graph TD
+    User[User] -->|Interacts with| Frontend[Vue.js Frontend]
+    Frontend -->|API Requests| Backend[Django Backend]
+    Backend -->|Returns Data| Frontend
+    Backend -->|Reads/Writes| Database[(Database)]
+    Backend -->|Processes Music Data| RecommendationEngine[Recommendation Engine]
+    RecommendationEngine -->|Generates Recommendations| Database
+    
+    subgraph "Frontend Layer"
+        Frontend --> Components[UI Components]
+        Frontend --> Stores[Pinia Stores]
+        Frontend --> Router[Vue Router]
+    end
+    
+    subgraph "Backend Layer"
+        Backend --> UserService[User Service]
+        Backend --> MusicService[Music Service]
+        Backend --> PlaylistService[Playlist Service]
+        Backend --> RecommendationService[Recommendation Service]
+    end
+```
+
+## Technology Stack
+
+RhythmFusion uses a modern technology stack to ensure high performance, scalability, and development efficiency:
+
+### Frontend
+- Vue 3.5.13 (Composition API)
+- TypeScript
+- Vite 6.2.1
+- Pinia State Management
+- Axios HTTP Client
+- SCSS Styling
+- Element Plus UI Component Library
+
+### Backend
+- Django 5.0.2
+- Django REST Framework
+- JWT Authentication
+- SQLite/MySQL Database
+- Custom Recommendation Algorithms
+
+### Recommendation System
+- Collaborative Filtering (SVD)
+- Content Feature Extraction
+- Hybrid Recommendation Strategy
+- FAISS Vector Search
+
+## Quick Start
+
+To quickly get started with RhythmFusion:
+
+1. Check the [System Architecture](architecture.md) for a system overview
+2. Refer to the [Development Guide](development.md) to set up your development environment
+3. Or refer to the [Deployment Guide](deployment.md) for system deployment
+4. Use the [User Guide](user_guide.md) to understand system functionality
+
+## Contribution Guidelines
+
+We welcome community contributions to the RhythmFusion project. If you'd like to contribute:
+
+1. First, read the [Development Guide](development.md)
+2. Check the Issues list on GitHub for tasks to work on
+3. Follow the development workflow to submit a Pull Request
+4. Ensure your code follows the project's coding standards and test requirements
+
+## Contact
+
+If you have any questions, suggestions, or feedback, please contact us through:
+
+- GitHub Issues: [https://github.com/SOV710/RhythmFusion/issues](https://github.com/SOV710/RhythmFusion/issues)
+- Project Maintainer: [example@email.com](mailto:example@email.com)
+
+---
+
+&copy; 2023-2024 RhythmFusion Team | [GNU GPL v3.0](../LICENSE) 

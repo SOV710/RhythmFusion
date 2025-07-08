@@ -12,22 +12,22 @@ RhythmFusion 使用关系型数据库存储用户数据、音乐元数据、歌�
 
 ```mermaid
 erDiagram
-    User ||--o{ UserProfile : 拥有
-    User ||--o{ Playlist : 创建
-    User ||--o{ UserInteraction : 执行
-    User ||--o{ LikedSong : 喜欢
-    
-    Playlist ||--o{ PlaylistTrack : 包含
-    PlaylistTrack }o--|| Song : 引用
-    
-    Song ||--o{ LikedSong : 被标记为喜欢
-    Song ||--o{ UserInteraction : 参与
-    Song }o--|| Genre : 属于
-    Song }o--|| Artist : 由…演唱
-    Song }o--|| Album : 隶属
-    
-    Album }o--|| Artist : 由…创作
-    
+    User ||--o{ UserProfile : has
+    User ||--o{ Playlist : creates
+    User ||--o{ UserInteraction : performs
+    User ||--o{ LikedSong : likes
+  
+    Playlist ||--o{ PlaylistTrack : contains
+    PlaylistTrack }o--|| Song : references
+  
+    Song ||--o{ LikedSong : liked_as
+    Song ||--o{ UserInteraction : involved_in
+    Song }o--|| Genre : belongs_to
+    Song }o--|| Artist : performed_by
+    Song }o--|| Album : part_of
+  
+    Album }o--|| Artist : created_by
+  
     UserInteraction {
         id int PK
         user_id int FK
@@ -37,7 +37,7 @@ erDiagram
         play_duration int
         rating float
     }
-    
+  
     User {
         id int PK
         username string
@@ -46,7 +46,7 @@ erDiagram
         date_joined datetime
         last_login datetime
     }
-    
+  
     UserProfile {
         id int PK
         user_id int FK
@@ -54,7 +54,7 @@ erDiagram
         bio text
         preferences json
     }
-    
+  
     Song {
         id int PK
         title string
@@ -66,7 +66,7 @@ erDiagram
         audio_file_path string
         cover_image_url string
     }
-    
+  
     Playlist {
         id int PK
         user_id int FK
@@ -76,7 +76,7 @@ erDiagram
         created_at datetime
         updated_at datetime
     }
-    
+  
     PlaylistTrack {
         id int PK
         playlist_id int FK
@@ -84,20 +84,20 @@ erDiagram
         position int
         added_at datetime
     }
-    
+  
     Genre {
         id int PK
         name string
         description text
     }
-    
+  
     Artist {
         id int PK
         name string
         bio text
         image_url string
     }
-    
+  
     Album {
         id int PK
         title string
@@ -105,7 +105,7 @@ erDiagram
         release_date date
         cover_image_url string
     }
-    
+  
     LikedSong {
         id int PK
         user_id int FK
