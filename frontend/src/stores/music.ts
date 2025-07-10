@@ -30,7 +30,7 @@ export const useMusicStore = defineStore('music', () => {
 
   // 添加或移除歌曲到歌单创建缓冲区
   function toggleSongInBuffer(song: Song) {
-    const idx = playlistSongBuffer.value.findIndex(s => s.id === song.id)
+    const idx = playlistSongBuffer.value.findIndex((s) => s.id === song.id)
     if (idx > -1) {
       // 如果已存在，则移除
       playlistSongBuffer.value.splice(idx, 1)
@@ -42,7 +42,7 @@ export const useMusicStore = defineStore('music', () => {
 
   // 检查歌曲是否在缓冲区中
   function isSongInBuffer(songId: number): boolean {
-    return playlistSongBuffer.value.some(song => song.id === songId)
+    return playlistSongBuffer.value.some((song) => song.id === songId)
   }
 
   // 清空选中歌曲缓冲区
@@ -57,7 +57,7 @@ export const useMusicStore = defineStore('music', () => {
 
   // 获取选中歌曲ID列表
   function getSelectedSongIds(): number[] {
-    return playlistSongBuffer.value.map(song => song.id)
+    return playlistSongBuffer.value.map((song) => song.id)
   }
 
   function clearSelection() {
@@ -80,7 +80,7 @@ export const useMusicStore = defineStore('music', () => {
 
     try {
       loadingIds.value.push(songId)
-      
+
       if (isSongLiked(songId)) {
         // 如果已经喜欢，则取消喜欢
         await unlikeSong(songId)
@@ -88,7 +88,7 @@ export const useMusicStore = defineStore('music', () => {
         if (index !== -1) {
           likedSongIds.value.splice(index, 1)
           // 同时从完整列表中移除
-          likedSongs.value = likedSongs.value.filter(s => s.id !== songId)
+          likedSongs.value = likedSongs.value.filter((s) => s.id !== songId)
         }
         ElMessage.success('已取消喜欢')
       } else {
@@ -115,7 +115,7 @@ export const useMusicStore = defineStore('music', () => {
       isLoadingLikes.value = true
       const songs = await getLikedSongs()
       likedSongs.value = songs
-      likedSongIds.value = songs.map(song => song.id)
+      likedSongIds.value = songs.map((song) => song.id)
     } catch (error) {
       ElMessage.error('获取喜欢的歌曲失败：' + String(error))
     } finally {
@@ -126,7 +126,7 @@ export const useMusicStore = defineStore('music', () => {
   // 设置喜欢的歌曲ID列表（可在应用初始化时从后端加载）
   function setLikedSongs(songs: Song[]) {
     likedSongs.value = songs
-    likedSongIds.value = songs.map(song => song.id)
+    likedSongIds.value = songs.map((song) => song.id)
   }
 
   return {
@@ -147,6 +147,6 @@ export const useMusicStore = defineStore('music', () => {
     isSongInBuffer,
     clearSongBuffer,
     getSelectedSongCount,
-    getSelectedSongIds
+    getSelectedSongIds,
   }
 })

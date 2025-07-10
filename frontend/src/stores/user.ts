@@ -19,7 +19,7 @@ export const useUserStore = defineStore(
     // 登录表单数据
     const loginForm = ref<LoginPayload>({
       username: '',
-      password: ''
+      password: '',
     })
     const loginLoading = ref(false)
 
@@ -27,7 +27,7 @@ export const useUserStore = defineStore(
     const registerForm = ref<RegisterPayload>({
       username: '',
       email: '',
-      password: ''
+      password: '',
     })
     const registerLoading = ref(false)
 
@@ -40,12 +40,15 @@ export const useUserStore = defineStore(
         console.error('尝试设置空的 token:', { access, refresh })
         return
       }
-      console.log('Setting tokens:', { access: access.substring(0, 10) + '...', refresh: refresh.substring(0, 10) + '...' })
-      
+      console.log('Setting tokens:', {
+        access: access.substring(0, 10) + '...',
+        refresh: refresh.substring(0, 10) + '...',
+      })
+
       // 先设置 localStorage，因为拦截器依赖这个
       localStorage.setItem('access_token', access)
       localStorage.setItem('refresh_token', refresh)
-      
+
       // 然后更新 store 状态
       accessToken.value = access
       refreshToken.value = refresh
@@ -54,11 +57,11 @@ export const useUserStore = defineStore(
     // 清除 tokens
     function clearTokens() {
       console.log('Clearing tokens')
-      
+
       // 先清除 localStorage
       localStorage.removeItem('access_token')
       localStorage.removeItem('refresh_token')
-      
+
       // 然后更新 store 状态
       accessToken.value = ''
       refreshToken.value = ''
@@ -75,11 +78,11 @@ export const useUserStore = defineStore(
       try {
         const { data } = await userApi.login(loginForm.value)
         console.log('Login response:', data)
-        
+
         if (!data.access || !data.refresh) {
           throw new Error('服务器未返回有效的访问令牌')
         }
-        
+
         setTokens(data.access, data.refresh)
         ElMessage.success('登录成功')
         // 重置表单
@@ -96,7 +99,11 @@ export const useUserStore = defineStore(
 
     // 注册逻辑
     async function handleRegister() {
-      if (!registerForm.value.username || !registerForm.value.email || !registerForm.value.password) {
+      if (
+        !registerForm.value.username ||
+        !registerForm.value.email ||
+        !registerForm.value.password
+      ) {
         ElMessage.warning('请填写完整的注册信息')
         return false
       }
@@ -119,13 +126,13 @@ export const useUserStore = defineStore(
     // 登出逻辑
     async function handleLogout() {
       const currentRefreshToken = refreshToken.value || localStorage.getItem('refresh_token')
-      
+
       if (!currentRefreshToken) {
         ElMessage.warning('您已经退出登录')
         clearTokens()
         return true
       }
-      
+
       try {
         await userApi.logout(currentRefreshToken)
         clearTokens()
@@ -210,7 +217,7 @@ export const useUserStore = defineStore(
       fetchProfile,
       updateProfile,
       resetLoginForm,
-      resetRegisterForm
+      resetRegisterForm,
     }
   },
   {

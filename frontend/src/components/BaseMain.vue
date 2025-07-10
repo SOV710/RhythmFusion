@@ -63,8 +63,8 @@ onBeforeUnmount(() => {
         Experience music like never before with
         <a href="https://vuejs.org/" target="_blank" class="tech-link"> Vue 3</a> +
         <a href="https://vite.dev/" target="_blank" class="tech-link"> Vite</a> +
-        <a href="https://www.typescriptlang.org/" target="_blank" class="tech-link"> TypeScript</a> +
-        <a href="https://sass-lang.com/" target="_blank" class="tech-link"> SCSS</a> +
+        <a href="https://www.typescriptlang.org/" target="_blank" class="tech-link"> TypeScript</a>
+        + <a href="https://sass-lang.com/" target="_blank" class="tech-link"> SCSS</a> +
         <a href="https://router.vuejs.org/" target="_blank" class="tech-link"> Vue-Router</a> +
         <a href="https://pinia.vuejs.org/" target="_blank" class="tech-link"> Pinia</a> +
         <a href="https://element-plus.org/" target="_blank" class="tech-link"> Element Plus</a>, and
@@ -73,11 +73,7 @@ onBeforeUnmount(() => {
 
       <div class="glow-container" @mousemove="handleMouseMove">
         <div class="glow-layer" :style="glowStyle"></div>
-        <img
-          src="@/assets/logo.png"
-          alt="Rhythm Fusion Logo"
-          class="logo-image"
-        />
+        <img src="@/assets/logo.png" alt="Rhythm Fusion Logo" class="logo-image" />
       </div>
 
       <div class="features-section">
@@ -88,7 +84,7 @@ onBeforeUnmount(() => {
           <h3>Discover Music</h3>
           <p>Find new artists and songs tailored to your taste</p>
         </div>
-        
+
         <div class="feature-card hover-card">
           <div class="feature-icon">
             <i class="el-icon-star-on"></i>
@@ -96,7 +92,7 @@ onBeforeUnmount(() => {
           <h3>Create Playlists</h3>
           <p>Curate your perfect music collections</p>
         </div>
-        
+
         <div class="feature-card hover-card">
           <div class="feature-icon">
             <i class="el-icon-connection"></i>
@@ -117,7 +113,7 @@ onBeforeUnmount(() => {
   align-items: center;
   gap: 1rem;
   margin-bottom: 2rem;
-  
+
   .nav-button {
     font-weight: 500;
     padding: 0.5rem 1.25rem;
@@ -126,12 +122,12 @@ onBeforeUnmount(() => {
     box-shadow: 0 4px 15px rgba(var(--rf-primary-rgb), 0.3);
     color: white;
     transition: all 0.3s ease;
-    
+
     &:hover {
       transform: translateY(-3px);
       box-shadow: 0 6px 20px rgba(var(--rf-primary-rgb), 0.4);
     }
-    
+
     &:active {
       transform: translateY(-1px);
     }
@@ -152,11 +148,11 @@ onBeforeUnmount(() => {
   max-width: 700px;
   margin: 0 auto 3rem;
   line-height: 1.6;
-  
+
   @media (prefers-color-scheme: dark) {
     color: var(--rf-text-secondary-dark);
   }
-  
+
   .tech-link {
     position: relative;
     color: var(--rf-primary);
@@ -164,7 +160,7 @@ onBeforeUnmount(() => {
     text-decoration: none;
     transition: all 0.2s;
     padding: 0 0.15rem;
-    
+
     &::after {
       content: '';
       position: absolute;
@@ -177,10 +173,10 @@ onBeforeUnmount(() => {
       transform-origin: center;
       transition: transform 0.3s ease;
     }
-    
+
     &:hover {
       color: var(--rf-primary-dark);
-      
+
       &::after {
         transform: scaleX(1);
       }
@@ -196,7 +192,7 @@ onBeforeUnmount(() => {
   margin: 2rem auto;
   width: 500px;
   max-width: 100%;
-  
+
   &::before {
     content: '';
     position: absolute;
@@ -263,7 +259,8 @@ onBeforeUnmount(() => {
 }
 
 @keyframes floatAnimation {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0);
   }
   50% {
@@ -276,7 +273,7 @@ onBeforeUnmount(() => {
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 2rem;
   margin-top: 4rem;
-  
+
   .feature-card {
     @include rf-card;
     padding: 2rem;
@@ -286,12 +283,12 @@ onBeforeUnmount(() => {
     align-items: center;
     justify-content: center;
     border-radius: var(--rf-border-radius-lg);
-    
+
     @media (prefers-color-scheme: dark) {
       background-color: rgba(30, 30, 30, 0.7);
       backdrop-filter: blur(10px);
     }
-    
+
     .feature-icon {
       width: 60px;
       height: 60px;
@@ -305,22 +302,22 @@ onBeforeUnmount(() => {
       font-size: 1.5rem;
       box-shadow: 0 8px 20px rgba(var(--rf-primary-rgb), 0.3);
     }
-    
+
     h3 {
       font-size: 1.25rem;
       font-weight: 600;
       margin-bottom: 0.75rem;
       color: var(--rf-text-primary-light);
-      
+
       @media (prefers-color-scheme: dark) {
         color: var(--rf-text-primary-dark);
       }
     }
-    
+
     p {
       color: var(--rf-text-secondary-light);
       line-height: 1.5;
-      
+
       @media (prefers-color-scheme: dark) {
         color: var(--rf-text-secondary-dark);
       }
@@ -333,7 +330,7 @@ onBeforeUnmount(() => {
   .logo-image {
     width: 90%;
   }
-  
+
   .features-section {
     grid-template-columns: 1fr;
     gap: 1.5rem;

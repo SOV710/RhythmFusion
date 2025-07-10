@@ -68,7 +68,7 @@ export const usePlaylistStore = defineStore('playlist', () => {
     // 更新本地状态
     if (playlistTracks.value[playlistId]) {
       playlistTracks.value[playlistId] = playlistTracks.value[playlistId].filter(
-        track => track.id !== songId
+        (track) => track.id !== songId,
       )
     }
   }
@@ -83,7 +83,7 @@ export const usePlaylistStore = defineStore('playlist', () => {
   function setPlaylists(list: Playlist[]) {
     console.log('Setting playlists with data:', list)
     playlists.value = {}
-    
+
     // 确保 list 是数组并且非空
     if (Array.isArray(list) && list.length > 0) {
       list.forEach((p) => {

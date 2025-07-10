@@ -5,7 +5,7 @@ declare module 'axios' {
   export interface InternalAxiosRequestConfig {
     skipAuth?: boolean
   }
-  
+
   export interface AxiosRequestConfig {
     skipAuth?: boolean
   }

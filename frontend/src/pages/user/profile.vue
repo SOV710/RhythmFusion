@@ -38,16 +38,11 @@
           </el-upload>
         </div>
 
-        <el-form
-          :model="form"
-          ref="formRef"
-          label-width="100px"
-          class="profile-form"
-        >
+        <el-form :model="form" ref="formRef" label-width="100px" class="profile-form">
           <!-- 用户名输入 -->
           <el-form-item label="用户名" prop="username">
-            <el-input 
-              v-model="form.username" 
+            <el-input
+              v-model="form.username"
               placeholder="请输入用户名"
               prefix-icon="el-icon-user"
             />
@@ -56,14 +51,14 @@
           <!-- 姓名 -->
           <el-form-item label="姓名" prop="first_name">
             <div class="name-inputs">
-              <el-input 
-                v-model="form.first_name" 
+              <el-input
+                v-model="form.first_name"
                 placeholder="名"
                 prefix-icon="el-icon-user"
                 class="firstname-input"
               />
-              <el-input 
-                v-model="form.last_name" 
+              <el-input
+                v-model="form.last_name"
                 placeholder="姓"
                 prefix-icon="el-icon-user"
                 class="lastname-input"
@@ -73,11 +68,7 @@
 
           <!-- 邮箱 -->
           <el-form-item label="邮箱" prop="email">
-            <el-input 
-              v-model="form.email" 
-              placeholder="请输入邮箱"
-              prefix-icon="el-icon-message"
-            />
+            <el-input v-model="form.email" placeholder="请输入邮箱" prefix-icon="el-icon-message" />
           </el-form-item>
 
           <!-- 个人简介 -->
@@ -105,10 +96,10 @@
 
           <!-- 保存按钮 -->
           <el-form-item class="form-actions">
-            <el-button 
-              type="primary" 
-              @click="saveProfile" 
-              :loading="loading" 
+            <el-button
+              type="primary"
+              @click="saveProfile"
+              :loading="loading"
               class="save-button animated-button"
             >
               <i class="el-icon-check mr-1"></i>
@@ -146,14 +137,14 @@ const form = ref<ProfileForm>({
   last_name: '',
   bio: '',
   birth_date: '',
-  avatar: ''
+  avatar: '',
 })
 const loading = ref(false)
 
 // 为头像上传提供认证头信息
 const uploadHeaders = computed(() => {
   return {
-    Authorization: `Bearer ${userStore.accessToken}`
+    Authorization: `Bearer ${userStore.accessToken}`,
   }
 })
 
@@ -162,7 +153,7 @@ function customUpload(options: UploadRequestOptions): Promise<any> {
   return new Promise((resolve) => {
     // 我们不在这里直接上传，而是存储文件引用以供保存时上传
     form.value.avatarFile = options.file
-    
+
     // 创建本地预览
     const reader = new FileReader()
     reader.onload = (e) => {
@@ -179,14 +170,14 @@ function customUpload(options: UploadRequestOptions): Promise<any> {
 function beforeAvatarUpload(file: File) {
   const isImage = file.type.startsWith('image/')
   const isLt2M = file.size / 1024 / 1024 < 2
-  
+
   if (!isImage) {
     ElMessage.error('上传头像只能是图片格式!')
   }
   if (!isLt2M) {
     ElMessage.error('上传头像大小不能超过 2MB!')
   }
-  
+
   return isImage && isLt2M
 }
 
@@ -207,23 +198,23 @@ async function saveProfile() {
   try {
     // 将表单数据转为FormData，以支持文件上传
     const formData = new FormData()
-    
+
     // 只添加已修改的字段
     Object.entries(form.value).forEach(([key, value]) => {
       if (value !== null && value !== undefined && key !== 'avatarFile') {
         formData.append(key, value as string)
       }
     })
-    
+
     // 特殊处理头像文件
     if (form.value.avatarFile) {
       formData.append('avatar', form.value.avatarFile)
     }
-    
+
     // 调用pinia store方法更新资料
     await userStore.updateProfile(formData)
     ElMessage.success('个人资料保存成功')
-    
+
     // 清除临时文件引用
     form.value.avatarFile = undefined
   } catch (error) {
@@ -256,7 +247,7 @@ onMounted(async () => {
   max-width: 1200px;
   margin: 0 auto;
   padding: 2rem 1rem;
-  
+
   @include mobile {
     padding: 1rem;
   }
@@ -269,11 +260,11 @@ onMounted(async () => {
   margin: 0 auto;
   background-color: rgba(255, 255, 255, 0.9);
   backdrop-filter: blur(10px);
-  
+
   @media (prefers-color-scheme: dark) {
     background-color: rgba(30, 30, 30, 0.8);
   }
-  
+
   @include mobile {
     padding: 1.5rem;
   }
@@ -284,7 +275,7 @@ onMounted(async () => {
   align-items: center;
   margin-bottom: 2rem;
   gap: 1rem;
-  
+
   .title-icon {
     width: 48px;
     height: 48px;
@@ -297,7 +288,7 @@ onMounted(async () => {
     font-size: 1.5rem;
     box-shadow: var(--rf-shadow-md);
   }
-  
+
   .page-title {
     font-size: 1.75rem;
     font-weight: 700;
@@ -310,7 +301,7 @@ onMounted(async () => {
   display: flex;
   justify-content: center;
   margin-bottom: 2rem;
-  
+
   .avatar-uploader {
     .avatar-container {
       position: relative;
@@ -322,22 +313,22 @@ onMounted(async () => {
       box-shadow: var(--rf-shadow-md);
       border: 3px solid rgba(var(--rf-primary-rgb), 0.3);
       transition: all var(--rf-transition-normal);
-      
+
       &:hover {
         border-color: var(--rf-primary);
         transform: scale(1.05);
-        
+
         .avatar-overlay {
           opacity: 1;
         }
       }
-      
+
       .avatar-image {
         width: 100%;
         height: 100%;
         object-fit: cover;
       }
-      
+
       .avatar-placeholder {
         width: 100%;
         height: 100%;
@@ -348,7 +339,7 @@ onMounted(async () => {
         font-size: 2rem;
         color: var(--rf-primary);
       }
-      
+
       .avatar-overlay {
         position: absolute;
         top: 0;
@@ -363,12 +354,12 @@ onMounted(async () => {
         color: white;
         opacity: 0;
         transition: opacity var(--rf-transition-normal);
-        
+
         i {
           font-size: 1.5rem;
           margin-bottom: 0.5rem;
         }
-        
+
         span {
           font-size: 0.9rem;
         }
@@ -382,44 +373,44 @@ onMounted(async () => {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 1rem;
-    
+
     @include mobile {
       grid-template-columns: 1fr;
     }
   }
-  
+
   :deep(.el-input__wrapper) {
     box-shadow: var(--rf-shadow-sm);
     transition: all var(--rf-transition-normal);
     border-radius: 8px;
-    
+
     &:focus-within {
       box-shadow: 0 0 0 1px var(--rf-primary) !important;
       transform: translateY(-2px);
     }
   }
-  
+
   .bio-input {
     :deep(.el-textarea__inner) {
       border-radius: 8px;
       resize: none;
-      
+
       &:focus {
         box-shadow: 0 0 0 1px var(--rf-primary) !important;
       }
     }
   }
-  
+
   .date-picker {
     width: 100%;
   }
-  
+
   .form-actions {
     margin-top: 2rem;
     display: flex;
     justify-content: center;
   }
-  
+
   .save-button {
     padding: 0.75rem 2rem;
     font-weight: 500;
@@ -427,7 +418,7 @@ onMounted(async () => {
     max-width: 300px;
     background: linear-gradient(90deg, var(--rf-primary), var(--rf-secondary));
     border: none;
-    
+
     &:hover {
       transform: translateY(-3px);
       box-shadow: var(--rf-shadow-md);
@@ -441,18 +432,18 @@ onMounted(async () => {
     flex-direction: column;
     align-items: flex-start;
     gap: 0.5rem;
-    
+
     .title-icon {
       width: 40px;
       height: 40px;
       font-size: 1.25rem;
     }
-    
+
     .page-title {
       font-size: 1.5rem;
     }
   }
-  
+
   .profile-form {
     :deep(.el-form-item__label) {
       float: none;
@@ -461,7 +452,7 @@ onMounted(async () => {
       padding: 0 0 8px;
       line-height: 1.5;
     }
-    
+
     :deep(.el-form-item__content) {
       margin-left: 0 !important;
     }

@@ -18,10 +18,7 @@
 
         <!-- 空状态 -->
         <div v-else-if="!likedSongs || likedSongs.length === 0" class="empty-state">
-          <el-empty 
-            description="您还没有收藏任何歌曲" 
-            class="custom-empty"
-          >
+          <el-empty description="您还没有收藏任何歌曲" class="custom-empty">
             <template #image>
               <div class="empty-illustration">
                 <i class="el-icon-star-off"></i>
@@ -29,7 +26,9 @@
             </template>
           </el-empty>
           <p class="empty-tip">在发现页面上查找歌曲并点击收藏按钮</p>
-          <el-button class="discover-button animated-button" type="primary" @click="goToSearch">去发现音乐</el-button>
+          <el-button class="discover-button animated-button" type="primary" @click="goToSearch"
+            >去发现音乐</el-button
+          >
         </div>
 
         <!-- 歌曲列表 -->
@@ -40,7 +39,7 @@
               共收藏了 <span class="font-bold">{{ likedSongs.length }}</span> 首歌曲
             </div>
           </div>
-          
+
           <div class="songs-list-container">
             <el-table
               :data="likedSongs"
@@ -126,15 +125,15 @@ async function handleUnlike(song: Song) {
     processingIds.value.push(song.id)
     // 使用新的删除喜欢歌曲的API
     await musicApi.deleteLikedSong(song.id)
-    
+
     // 从列表中移除
-    likedSongs.value = likedSongs.value.filter(s => s.id !== song.id)
+    likedSongs.value = likedSongs.value.filter((s) => s.id !== song.id)
     ElMessage.success(`已从喜欢列表中移除《${song.title}》`)
   } catch (error) {
     console.error('取消喜欢失败:', error)
     ElMessage.error('操作失败，请稍后重试')
   } finally {
-    processingIds.value = processingIds.value.filter(id => id !== song.id)
+    processingIds.value = processingIds.value.filter((id) => id !== song.id)
   }
 }
 
@@ -151,7 +150,7 @@ function goToSearch() {
 .content-container {
   max-width: 1200px;
   padding: 2rem 1rem;
-  
+
   @include mobile {
     padding: 1rem;
   }
@@ -162,11 +161,11 @@ function goToSearch() {
   padding: 2rem;
   background-color: rgba(255, 255, 255, 0.9);
   backdrop-filter: blur(10px);
-  
+
   @media (prefers-color-scheme: dark) {
     background-color: rgba(30, 30, 30, 0.8);
   }
-  
+
   @include mobile {
     padding: 1rem;
   }
@@ -177,7 +176,7 @@ function goToSearch() {
   align-items: center;
   margin-bottom: 2rem;
   gap: 1rem;
-  
+
   .title-icon {
     width: 48px;
     height: 48px;
@@ -190,7 +189,7 @@ function goToSearch() {
     font-size: 1.5rem;
     box-shadow: var(--rf-shadow-md);
   }
-  
+
   .page-title {
     font-size: 1.75rem;
     font-weight: 700;
@@ -209,36 +208,36 @@ function goToSearch() {
   align-items: center;
   justify-content: center;
   padding: 3rem 1rem;
-  
+
   .custom-empty {
     margin-bottom: 1.5rem;
   }
-  
+
   .empty-illustration {
     font-size: 4rem;
     color: rgba(var(--rf-primary-rgb), 0.2);
     margin-bottom: 1rem;
-    
+
     @media (prefers-color-scheme: dark) {
       color: rgba(255, 255, 255, 0.1);
     }
   }
-  
+
   .empty-tip {
     margin-bottom: 1.5rem;
     color: var(--rf-text-secondary-light);
-    
+
     @media (prefers-color-scheme: dark) {
       color: var(--rf-text-secondary-dark);
     }
   }
-  
+
   .discover-button {
     padding: 0.75rem 2rem;
     font-weight: 500;
     background: linear-gradient(90deg, var(--rf-primary), var(--rf-secondary));
     border: none;
-    
+
     &:hover {
       transform: translateY(-3px);
       box-shadow: var(--rf-shadow-md);
@@ -248,7 +247,7 @@ function goToSearch() {
 
 .songs-stats {
   margin-bottom: 1.5rem;
-  
+
   .stats-badge {
     display: inline-block;
     padding: 0.5rem 1rem;
@@ -256,7 +255,7 @@ function goToSearch() {
     color: var(--rf-primary);
     border-radius: var(--rf-border-radius-full);
     font-size: 0.9rem;
-    
+
     @media (prefers-color-scheme: dark) {
       background-color: rgba(255, 255, 255, 0.1);
     }
@@ -265,17 +264,17 @@ function goToSearch() {
 
 .songs-list-container {
   @include rf-smooth-scrollbar;
-  
+
   .liked-table {
     :deep(.el-table__row) {
       cursor: pointer;
       transition: all var(--rf-transition-normal);
-      
+
       &:hover {
         background-color: rgba(var(--rf-primary-rgb), 0.05);
       }
     }
-    
+
     .song-number {
       width: 28px;
       height: 28px;
@@ -286,16 +285,16 @@ function goToSearch() {
       font-weight: 500;
       font-size: 0.9rem;
       color: var(--rf-text-secondary-light);
-      
+
       @media (prefers-color-scheme: dark) {
         color: var(--rf-text-secondary-dark);
       }
     }
   }
-  
+
   .action-button {
     transition: all var(--rf-transition-normal);
-    
+
     &:hover {
       transform: scale(1.2);
       box-shadow: var(--rf-shadow-sm);
@@ -309,13 +308,13 @@ function goToSearch() {
     flex-direction: column;
     align-items: flex-start;
     gap: 0.5rem;
-    
+
     .title-icon {
       width: 40px;
       height: 40px;
       font-size: 1.25rem;
     }
-    
+
     .page-title {
       font-size: 1.5rem;
     }

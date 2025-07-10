@@ -22,13 +22,18 @@ export function getPlaylists(): Promise<Playlist[]> {
     .then((res) => {
       console.log('Playlist API response:', res.data)
       // 检查返回格式，如果是分页格式，提取results数组
-      if (res.data && typeof res.data === 'object' && 'results' in res.data && Array.isArray(res.data.results)) {
+      if (
+        res.data &&
+        typeof res.data === 'object' &&
+        'results' in res.data &&
+        Array.isArray(res.data.results)
+      ) {
         return res.data.results
       }
       // 否则假设整个响应就是数组
       return Array.isArray(res.data) ? res.data : []
     })
-    .catch(err => {
+    .catch((err) => {
       console.error('Failed to fetch playlists:', err)
       // Return empty array instead of throwing to prevent cascading errors
       return []
@@ -51,7 +56,12 @@ export function getPlaylistTracks(id: number): Promise<Track[]> {
     .get<PaginatedResponse<Track> | Track[]>(`/api/playlists/${id}/tracks/`)
     .then((res) => {
       // 检查返回格式，如果是分页格式，提取results数组
-      if (res.data && typeof res.data === 'object' && 'results' in res.data && Array.isArray(res.data.results)) {
+      if (
+        res.data &&
+        typeof res.data === 'object' &&
+        'results' in res.data &&
+        Array.isArray(res.data.results)
+      ) {
         return res.data.results
       }
       // 否则假设整个响应就是数组
@@ -75,7 +85,12 @@ export function recommendPlaylistSongs(playlistId: number): Promise<Song[]> {
     .get<PaginatedResponse<Song> | Song[]>(`/api/playlists/${playlistId}/recommendations/`)
     .then((res) => {
       // 检查返回格式，如果是分页格式，提取results数组
-      if (res.data && typeof res.data === 'object' && 'results' in res.data && Array.isArray(res.data.results)) {
+      if (
+        res.data &&
+        typeof res.data === 'object' &&
+        'results' in res.data &&
+        Array.isArray(res.data.results)
+      ) {
         return res.data.results
       }
       // 否则假设整个响应就是数组
