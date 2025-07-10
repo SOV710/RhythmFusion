@@ -65,5 +65,5 @@ export default {
   register,
   logout,
   fetchProfile,
-  updateProfile
+  updateProfile,
 }

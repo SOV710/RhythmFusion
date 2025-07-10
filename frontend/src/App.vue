@@ -1,5 +1,4 @@
 <script lang="ts" setup>
-import { useI18n } from '@/composables'
 import { useUserStore } from '@/stores/user'
 import { useMusicStore } from '@/stores/music'
 import { usePlaylistStore } from '@/stores/playlist'
@@ -7,7 +6,6 @@ import { onMounted, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import axios from 'axios'
 
-const { locale } = useI18n()
 const userStore = useUserStore()
 const musicStore = useMusicStore()
 const playlistStore = usePlaylistStore()
@@ -36,20 +34,20 @@ async function initializeUserData() {
 async function checkTokenValidity() {
   const accessToken = localStorage.getItem('access_token')
   const refreshToken = localStorage.getItem('refresh_token')
-  
-  console.log('初始化应用，检查令牌状态:', { 
+
+  console.log('初始化应用，检查令牌状态:', {
     hasAccess: !!accessToken,
     hasRefresh: !!refreshToken,
-    isAuthenticated: userStore.isAuthenticated
+    isAuthenticated: userStore.isAuthenticated,
   })
-  
+
   if (accessToken && refreshToken) {
     if (!userStore.isAuthenticated) {
       console.log('本地存储中有令牌，但store中没有，正在同步')
       // If we have tokens in localStorage but not in store, set them in store
       userStore.setTokens(accessToken, refreshToken)
     }
-    
+
     // 验证token有效性
     try {
       console.log('验证令牌有效性...')
@@ -73,24 +71,25 @@ onMounted(async () => {
 })
 
 // 监听登录状态变化
-watch(() => userStore.isAuthenticated, (newValue) => {
-  if (newValue) {
-    // 登录成功，初始化用户数据
-    initializeUserData()
-  }
-})
+watch(
+  () => userStore.isAuthenticated,
+  (newValue) => {
+    if (newValue) {
+      // 登录成功，初始化用户数据
+      initializeUserData()
+    }
+  },
+)
 </script>
 
 <template>
-  <el-config-provider :locale="locale">
-    <BaseHeader />
-    <el-container class="main-container flex">
-      <BaseSide />
-      <div w="full" py="2">
-        <RouterView />
-      </div>
-    </el-container>
-  </el-config-provider>
+  <BaseHeader />
+  <el-container class="main-container flex">
+    <BaseSide />
+    <div w="full" py="2">
+      <RouterView />
+    </div>
+  </el-container>
 </template>
 
 <style>

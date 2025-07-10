@@ -53,13 +53,33 @@ const genres = ref([
     image: classical,
     artists: 'Ludwig van Beethoven, Wolfgang Amadeus Mozart, Johann Sebastian Bach',
   },
-  { name: 'Country', code: 'country', image: country, artists: 'Johnny Cash, Dolly Parton, Willie Nelson' },
+  {
+    name: 'Country',
+    code: 'country',
+    image: country,
+    artists: 'Johnny Cash, Dolly Parton, Willie Nelson',
+  },
   { name: 'Dance', code: 'dance', image: dance, artists: 'Daft Punk, Calvin Harris, Avicii' },
-  { name: 'Electronic', code: 'electronic', image: electronic, artists: 'Kraftwerk, Skrillex, Deadmau5' },
+  {
+    name: 'Electronic',
+    code: 'electronic',
+    image: electronic,
+    artists: 'Kraftwerk, Skrillex, Deadmau5',
+  },
   { name: 'Folk', code: 'folk', image: folk, artists: 'Bob Dylan, Joan Baez, Simon & Garfunkel' },
   { name: 'HipHop', code: 'hiphop', image: hiphop, artists: 'Kendrick Lamar, Eminem, Jay-Z' },
-  { name: 'Jazz', code: 'jazz', image: jazz, artists: 'Miles Davis, John Coltrane, Louis Armstrong' },
-  { name: 'J-Pop', code: 'jpop', image: jpop, artists: 'n-buna, Utada Hikaru, Kenshi Yonezu, YOASOBI' },
+  {
+    name: 'Jazz',
+    code: 'jazz',
+    image: jazz,
+    artists: 'Miles Davis, John Coltrane, Louis Armstrong',
+  },
+  {
+    name: 'J-Pop',
+    code: 'jpop',
+    image: jpop,
+    artists: 'n-buna, Utada Hikaru, Kenshi Yonezu, YOASOBI',
+  },
   { name: 'Metal', code: 'metal', image: metal, artists: 'Metallica, Iron Maiden, Black Sabbath' },
   { name: 'Pop', code: 'pop', image: pop, artists: 'Michael Jackson, Taylor Swift, Madonna' },
   { name: 'Punk', code: 'punk', image: punk, artists: 'The Clash, Ramones, Sex Pistols' },
@@ -118,11 +138,13 @@ function showAddToPlaylist(song: Song) {
     ElMessageBox.confirm('您还没有创建歌单，是否现在创建？', '添加到歌单', {
       confirmButtonText: '创建歌单',
       cancelButtonText: '取消',
-      type: 'info'
-    }).then(() => {
-      // 跳转到创建歌单页面
-      window.location.href = '/'
-    }).catch(() => {})
+      type: 'info',
+    })
+      .then(() => {
+        // 跳转到创建歌单页面
+        window.location.href = '/'
+      })
+      .catch(() => {})
     return
   }
 
@@ -165,7 +187,7 @@ async function addToSelectedPlaylists() {
     class="main-gradient-bg m-0 p-0 bg-gradient-to-b dark:from-[#212121] dark:via-[#1a1a1a] dark:to-[#121212] from-[#f8f9fa] via-[#f0f2f5] to-[#e5e8ed] min-h-screen"
   >
     <div class="content-container">
-            <div class="navigation-menu">
+      <div class="navigation-menu">
         <el-button
           type="primary"
           class="nav-button animated-button"
@@ -189,9 +211,7 @@ async function addToSelectedPlaylists() {
           <span class="title-icon"><i class="el-icon-headset"></i></span>
           发现音乐
         </h1>
-        <p class="page-description">
-          探索不同风格的音乐，发现属于你的专属推荐
-        </p>
+        <p class="page-description">探索不同风格的音乐，发现属于你的专属推荐</p>
       </div>
 
       <div class="genres-grid">
@@ -227,11 +247,12 @@ async function addToSelectedPlaylists() {
         </div>
       </template>
 
-      <div v-if="recommendationResults.length === 0 && !isLoadingRecommendations" class="text-center py-8">
+      <div
+        v-if="recommendationResults.length === 0 && !isLoadingRecommendations"
+        class="text-center py-8"
+      >
         <el-empty description="没有找到匹配的推荐歌曲" />
-        <p class="mt-4 text-sm text-gray-500">
-          尝试选择其他音乐风格以获取更多推荐
-        </p>
+        <p class="mt-4 text-sm text-gray-500">尝试选择其他音乐风格以获取更多推荐</p>
       </div>
 
       <el-table
@@ -292,10 +313,7 @@ async function addToSelectedPlaylists() {
       class="enhanced-dialog playlist-dialog"
     >
       <div v-if="userPlaylists.length > 0">
-        <el-table
-          :data="userPlaylists"
-          class="enhanced-table playlist-selection-table"
-        >
+        <el-table :data="userPlaylists" class="enhanced-table playlist-selection-table">
           <el-table-column prop="name" label="歌单名称" />
           <el-table-column label="操作" width="100">
             <template #default="{ row }">
@@ -310,22 +328,14 @@ async function addToSelectedPlaylists() {
 
         <div class="dialog-footer">
           <el-button @click="showPlaylistDialog = false">取消</el-button>
-          <el-button
-            type="primary"
-            @click="addToSelectedPlaylists"
-            class="animated-button"
-          >
+          <el-button type="primary" @click="addToSelectedPlaylists" class="animated-button">
             确定添加
           </el-button>
         </div>
       </div>
       <div v-else class="text-center py-8">
         <el-empty description="您还没有创建歌单" />
-        <el-button
-          type="primary"
-          class="mt-4 animated-button"
-          @click="showPlaylistDialog = false"
-        >
+        <el-button type="primary" class="mt-4 animated-button" @click="showPlaylistDialog = false">
           创建歌单
         </el-button>
       </div>
@@ -361,7 +371,6 @@ async function addToSelectedPlaylists() {
     }
   }
 }
-
 
 .content-container {
   max-width: 1200px;

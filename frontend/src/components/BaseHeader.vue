@@ -95,7 +95,7 @@ async function handleSearch() {
 
     // 使用musicApi模块的searchSongs函数
     const response = await musicApi.searchSongs(keyword)
-    
+
     console.log('搜索结果:', response)
 
     if (response && response.results) {
@@ -124,40 +124,42 @@ async function handleSearch() {
 
 // 处理分页变化
 async function handlePageChange(page: number) {
-  if (loading.value) return;
+  if (loading.value) return
 
-  loading.value = true;
-  const oldPage = currentPage.value;
-  currentPage.value = page;
+  loading.value = true
+  const oldPage = currentPage.value
+  currentPage.value = page
 
   try {
-    console.log(`加载第${page}页数据，当前页: ${oldPage}, 是否有下一页: ${hasNextPage.value}, 是否有上一页: ${hasPrevPage.value}`);
+    console.log(
+      `加载第${page}页数据，当前页: ${oldPage}, 是否有下一页: ${hasNextPage.value}, 是否有上一页: ${hasPrevPage.value}`,
+    )
 
     // 使用musicApi模块的searchSongs函数，带上页码
-    const response = await musicApi.searchSongs(searchKeyword.value, page);
+    const response = await musicApi.searchSongs(searchKeyword.value, page)
 
-    console.log('分页响应数据:', response);
+    console.log('分页响应数据:', response)
 
     if (response && response.results) {
-      results.value = response.results || [];
-      nextPageUrl.value = response.next;
-      prevPageUrl.value = response.previous;
-      hasNextPage.value = !!response.next;
-      hasPrevPage.value = !!response.previous;
-      total.value = response.count || 0;
+      results.value = response.results || []
+      nextPageUrl.value = response.next
+      prevPageUrl.value = response.previous
+      hasNextPage.value = !!response.next
+      hasPrevPage.value = !!response.previous
+      total.value = response.count || 0
     } else {
       // 处理异常响应
-      console.error('搜索响应数据格式不正确:', response);
-      results.value = [];
-      ElMessage.error('获取搜索结果失败：响应格式不正确');
+      console.error('搜索响应数据格式不正确:', response)
+      results.value = []
+      ElMessage.error('获取搜索结果失败：响应格式不正确')
     }
   } catch (error) {
-    console.error('分页加载失败:', error);
+    console.error('分页加载失败:', error)
     // 恢复到上一页
-    currentPage.value = oldPage;
-    ElMessage.error('加载更多结果失败');
+    currentPage.value = oldPage
+    ElMessage.error('加载更多结果失败')
   } finally {
-    loading.value = false;
+    loading.value = false
   }
 }
 
@@ -184,17 +186,17 @@ async function handleLogout() {
 
 async function handleLoginSuccess() {
   console.log('登录成功，获取用户数据')
-  
+
   // 登录成功后立即获取用户数据
   try {
     const tokens = {
       access: localStorage.getItem('access_token') || '',
-      refresh: localStorage.getItem('refresh_token') || ''
+      refresh: localStorage.getItem('refresh_token') || '',
     }
     console.log('当前令牌状态:', {
       hasAccess: !!tokens.access,
       hasRefresh: !!tokens.refresh,
-      isAuthenticated: userStore.isAuthenticated
+      isAuthenticated: userStore.isAuthenticated,
     })
 
     await playlistStore.fetchPlaylists()
@@ -278,9 +280,7 @@ async function addToSelectedPlaylists() {
   <el-menu class="el-menu-demo base-layout-header" mode="horizontal" :ellipsis="false" router>
     <el-menu-item index="/" class="logo-item">
       <div class="flex items-center justify-center gap-2">
-        <div class="logo-text">
-          <span>Rhythm</span><span class="fusion-text">Fusion</span>
-        </div>
+        <div class="logo-text"><span>Rhythm</span><span class="fusion-text">Fusion</span></div>
       </div>
     </el-menu-item>
 
@@ -299,10 +299,10 @@ async function addToSelectedPlaylists() {
           <el-icon><Search /></el-icon>
         </template>
       </el-input>
-      
-      <el-button 
-        type="primary" 
-        class="search-button animated-button" 
+
+      <el-button
+        type="primary"
+        class="search-button animated-button"
         @click="handleSearch"
         :disabled="!input.trim()"
       >
@@ -322,8 +322,12 @@ async function addToSelectedPlaylists() {
 
     <div class="auth-container">
       <template v-if="!userStore.isAuthenticated">
-        <el-button type="default" class="login-button animated-button" @click="handleLogin">Log in</el-button>
-        <el-button type="primary" class="signup-button animated-button" @click="handleRegister">Sign up</el-button>
+        <el-button type="default" class="login-button animated-button" @click="handleLogin"
+          >Log in</el-button
+        >
+        <el-button type="primary" class="signup-button animated-button" @click="handleRegister"
+          >Sign up</el-button
+        >
       </template>
       <template v-else>
         <!-- Submenu -->
@@ -352,15 +356,21 @@ async function addToSelectedPlaylists() {
   </el-menu>
 
   <!-- 搜索结果对话框 -->
-  <el-dialog v-model="showDialog" title="搜索结果" width="60%" destroy-on-close class="enhanced-dialog search-dialog">
-    <div v-if="!results || results.length === 0 && !loading" class="text-center py-8">
+  <el-dialog
+    v-model="showDialog"
+    title="搜索结果"
+    width="60%"
+    destroy-on-close
+    class="enhanced-dialog search-dialog"
+  >
+    <div v-if="!results || (results.length === 0 && !loading)" class="text-center py-8">
       <el-empty description="没有找到匹配的结果" />
       <p class="search-empty-tip">尝试其他关键词或调整您的搜索条件</p>
     </div>
 
-    <el-table 
-      v-else-if="results && results.length > 0" 
-      :data="results" 
+    <el-table
+      v-else-if="results && results.length > 0"
+      :data="results"
       v-loading="loading"
       class="enhanced-table"
     >
@@ -438,7 +448,9 @@ async function addToSelectedPlaylists() {
 
       <div class="flex justify-end mt-4">
         <el-button @click="showPlaylistDialog = false">取消</el-button>
-        <el-button type="primary" @click="addToSelectedPlaylists" class="animated-button">确定添加</el-button>
+        <el-button type="primary" @click="addToSelectedPlaylists" class="animated-button"
+          >确定添加</el-button
+        >
       </div>
     </div>
     <div v-else class="text-center py-4">
@@ -473,7 +485,13 @@ async function addToSelectedPlaylists() {
     </el-form>
     <template #footer>
       <el-button @click="showLogin = false">取消</el-button>
-      <el-button type="primary" :loading="userStore.loginLoading" @click="submitLogin" class="animated-button">登录</el-button>
+      <el-button
+        type="primary"
+        :loading="userStore.loginLoading"
+        @click="submitLogin"
+        class="animated-button"
+        >登录</el-button
+      >
     </template>
   </el-dialog>
 
@@ -507,7 +525,13 @@ async function addToSelectedPlaylists() {
     </el-form>
     <template #footer>
       <el-button @click="showSignup = false">取消</el-button>
-      <el-button type="primary" :loading="userStore.registerLoading" @click="submitRegister" class="animated-button">注册</el-button>
+      <el-button
+        type="primary"
+        :loading="userStore.registerLoading"
+        @click="submitRegister"
+        class="animated-button"
+        >注册</el-button
+      >
     </template>
   </el-dialog>
 </template>
@@ -526,13 +550,13 @@ async function addToSelectedPlaylists() {
     font-size: 1.5rem;
     font-weight: 700;
     letter-spacing: -0.02em;
-    
+
     span {
       background: linear-gradient(90deg, var(--rf-primary) 0%, var(--rf-primary-light) 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
     }
-    
+
     .fusion-text {
       background: linear-gradient(90deg, var(--rf-secondary) 0%, var(--rf-secondary-light) 100%);
       -webkit-background-clip: text;
@@ -548,31 +572,32 @@ async function addToSelectedPlaylists() {
   padding: 0 1rem;
   max-width: 500px;
   width: 100%;
-  
+
   .search-input {
     flex: 1;
-    
+
     :deep(.el-input__wrapper) {
       border-radius: 24px;
       padding-left: 0.75rem;
       box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.05);
       transition: all 0.3s;
-      
-      &:hover, &:focus {
+
+      &:hover,
+      &:focus {
         box-shadow: 0 0 0 1px var(--rf-primary-light);
       }
     }
-    
+
     :deep(.el-input__prefix) {
       color: var(--rf-primary);
     }
   }
-  
+
   .search-button {
     border-radius: 24px;
     padding: 0 1.5rem;
     transition: all 0.3s;
-    
+
     &:hover {
       transform: translateY(-2px);
       box-shadow: 0 4px 12px rgba(var(--rf-primary-rgb), 0.3);
@@ -589,12 +614,12 @@ async function addToSelectedPlaylists() {
     align-items: center;
     justify-content: center;
     transition: all 0.3s;
-    
+
     &:hover {
       background-color: rgba(var(--rf-primary-rgb), 0.1);
       transform: rotate(45deg);
     }
-    
+
     :deep(.el-icon) {
       font-size: 1.25rem;
       color: var(--rf-primary);
@@ -607,41 +632,46 @@ async function addToSelectedPlaylists() {
   align-items: center;
   gap: 1rem;
   padding: 0 1rem;
-  
-  .login-button, .signup-button {
+
+  .login-button,
+  .signup-button {
     border-radius: 24px;
     padding: 0.5rem 1.25rem;
     font-weight: 500;
     transition: all 0.3s;
-    
+
     &:hover {
       transform: translateY(-2px);
     }
   }
-  
+
   .signup-button {
     background: linear-gradient(90deg, var(--rf-primary) 0%, var(--rf-secondary) 100%);
     border: none;
-    
+
     &:hover {
-      background: linear-gradient(90deg, var(--rf-primary-light) 0%, var(--rf-secondary-light) 100%);
+      background: linear-gradient(
+        90deg,
+        var(--rf-primary-light) 0%,
+        var(--rf-secondary-light) 100%
+      );
       box-shadow: 0 4px 12px rgba(var(--rf-primary-rgb), 0.3);
     }
   }
-  
+
   .user-submenu {
     .el-sub-menu__title {
       transition: all 0.3s;
-      
+
       &:hover {
         background-color: rgba(var(--rf-primary-rgb), 0.1);
       }
     }
   }
-  
+
   .submenu-item {
     transition: all 0.3s;
-    
+
     &:hover {
       padding-left: 1.5rem;
       color: var(--rf-primary);
@@ -651,7 +681,7 @@ async function addToSelectedPlaylists() {
 
 .action-button {
   transition: all 0.3s;
-  
+
   &:hover {
     transform: scale(1.2);
   }
@@ -663,19 +693,19 @@ async function addToSelectedPlaylists() {
     color: var(--el-text-color-secondary);
     font-size: 0.9rem;
   }
-  
+
   .search-skeleton {
     max-width: 800px;
     margin: 0 auto;
   }
-  
+
   .pagination-control {
     margin-top: 1.5rem;
     padding: 0.5rem;
     background: rgba(var(--rf-primary-rgb), 0.05);
     border-radius: var(--rf-border-radius-full);
     display: inline-flex;
-    
+
     :deep(.el-pagination__jump) {
       margin-left: 1rem;
     }
@@ -695,7 +725,7 @@ async function addToSelectedPlaylists() {
   align-items: center;
   gap: 1rem;
   margin-left: 1rem;
-  
+
   .nav-button {
     font-weight: 500;
     padding: 0.5rem 1.25rem;
@@ -704,21 +734,21 @@ async function addToSelectedPlaylists() {
     box-shadow: 0 4px 15px rgba(var(--rf-primary-rgb), 0.3);
     color: white;
     transition: all 0.3s ease;
-    
+
     &:hover {
       transform: translateY(-3px);
       box-shadow: 0 6px 20px rgba(var(--rf-primary-rgb), 0.4);
     }
-    
+
     &:active {
       transform: translateY(-1px);
     }
   }
-  
+
   @media screen and (max-width: 768px) {
     margin-left: 0.5rem;
     gap: 0.5rem;
-    
+
     .nav-button {
       padding: 0.4rem 1rem;
       font-size: 0.9rem;
@@ -730,14 +760,15 @@ async function addToSelectedPlaylists() {
 @media screen and (max-width: 768px) {
   .search-container {
     max-width: 280px;
-    
+
     .search-button {
       padding: 0 1rem;
     }
   }
-  
+
   .auth-container {
-    .login-button, .signup-button {
+    .login-button,
+    .signup-button {
       padding: 0.4rem 1rem;
     }
   }

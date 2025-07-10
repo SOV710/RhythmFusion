@@ -52,7 +52,7 @@ export default defineConfig({
       include: [/\.vue$/, /\.vue\?vue/, /\.md$/],
       resolvers: [
         IconsResolver({
-          enableCollections: ['ep', 'el'],
+          enabledCollections: ['ep', 'el'],
         }),
 
         ElementPlusResolver({

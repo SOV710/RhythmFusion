@@ -2,25 +2,25 @@
 
 .liked-songs-page {
   width: 100%;
-  
+
   .page-container {
     @include rf-smooth-scrollbar;
     max-width: 90%;
     width: 100%;
     margin: 0 auto;
     padding: 2rem;
-    
+
     @include desktop {
       max-width: 1200px;
     }
   }
-  
+
   .page-header {
     margin-bottom: 2rem;
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    
+
     .title-icon {
       width: 40px;
       height: 40px;
@@ -30,12 +30,12 @@
       border-radius: var(--rf-border-radius-full);
       background-color: var(--rf-primary-light);
       color: white;
-      
+
       @media (prefers-color-scheme: dark) {
         background-color: var(--rf-primary-dark);
       }
     }
-    
+
     .page-title {
       font-size: 1.75rem;
       font-weight: 700;
@@ -43,50 +43,50 @@
       margin: 0;
     }
   }
-  
+
   .content-card {
     @include rf-card;
     padding: 1.5rem;
     background-color: var(--rf-card-bg-light);
-    
+
     @media (prefers-color-scheme: dark) {
       background-color: var(--rf-card-bg-dark);
     }
   }
-  
+
   .empty-state {
     text-align: center;
     padding: 3rem 1rem;
-    
+
     .empty-message {
       color: var(--rf-text-secondary-light);
       font-size: 1rem;
       margin-bottom: 1.5rem;
-      
+
       @media (prefers-color-scheme: dark) {
         color: var(--rf-text-secondary-dark);
       }
     }
-    
+
     .discover-button {
       transition: all var(--rf-transition-normal);
-      
+
       &:hover {
         transform: scale(1.05);
       }
     }
   }
-  
+
   .loading-spinner {
     display: flex;
     justify-content: center;
     padding: 3rem 0;
   }
-  
+
   // Enhanced table styles
   .songs-table {
     width: 100%;
-    
+
     :deep(th) {
       font-weight: 600;
       color: var(--rf-text-secondary-light);
@@ -94,37 +94,37 @@
       text-transform: uppercase;
       font-size: 0.8rem;
       letter-spacing: 0.5px;
-      
+
       @media (prefers-color-scheme: dark) {
         color: var(--rf-text-secondary-dark);
         background-color: rgba(255, 255, 255, 0.05);
       }
     }
-    
+
     :deep(td) {
       padding: 0.75rem 0.5rem;
       vertical-align: middle;
     }
-    
+
     :deep(.el-button--small) {
       padding: 8px;
       transition: all var(--rf-transition-normal);
-      
+
       &:hover {
         transform: scale(1.1);
       }
     }
-    
+
     // Responsive adjustments
     @include mobile {
-      :deep(th), 
+      :deep(th),
       :deep(td) {
         padding: 8px 4px;
       }
-      
+
       :deep(.el-button--small) {
         padding: 6px;
       }
     }
   }
-} 
+}
