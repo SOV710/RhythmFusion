@@ -4,6 +4,7 @@ djangorestframework==3.14.0
 django-debug-toolbar==5.0.1
 django-cors-headers==4.3.1
 djangorestframework-simplejwt==5.3.1
+drf-spectacular==0.28.0
 
 # 数据库 & 驱动
 mysqlclient==2.2.4
