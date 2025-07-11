@@ -87,22 +87,31 @@ State management is implemented using Pinia, the official Vue state management l
 
 ```mermaid
 graph LR
-    subgraph Pinia Stores
-        UserStore[User Store] --- PlaylistStore[Playlist Store]
-        UserStore --- MusicStore[Music Store]
-        PlaylistStore --- MusicStore
-    end
-  
-    subgraph Components
-        C[Components]
-    end
-  
-    subgraph API
-        A[API Modules]
-    end
-  
-    C <-->|Read/Write| Pinia Stores
-    Pinia Stores <-->|API Calls| A
+  %% 定义子图
+  subgraph "Pinia Stores"
+    US[User Store]
+    PS[Playlist Store]
+    MS[Music Store]
+  end
+
+  subgraph Components
+    C[Components]
+  end
+
+  subgraph API
+    A[API Modules]
+  end
+
+  %% 组件与各 Store 的读写关系
+  C <-->|Read/Write| US
+  C <-->|Read/Write| PS
+  C <-->|Read/Write| MS
+
+  %% 各 Store 与 API 的调用关系
+  US -->|API Calls| A
+  PS -->|API Calls| A
+  MS -->|API Calls| A
+
 ```
 
 ## Backend Architecture
