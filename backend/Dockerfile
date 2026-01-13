@@ -1,4 +1,4 @@
-FROM python:3.10.16-slim AS backend-builder
+FROM python:3.14.2-slim AS backend-builder
 
 RUN apt-get update && \
 	apt-get install -y --no-install-recommends \
