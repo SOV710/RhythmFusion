@@ -1,0 +1,60 @@
+version: 2
+
+updates:
+  # Frontend (pnpm) - use "npm" ecosystem
+  - package-ecosystem: "npm"
+    directory: "/RhythmFusion/frontend"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "03:00"
+      timezone: "Etc/UTC"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+      - "frontend"
+    commit-message:
+      prefix: "deps(frontend)"
+      include: "scope"
+
+    # Reduce PR noise by grouping (optional but recommended)
+    groups:
+      vite-and-vue-tooling:
+        patterns:
+          - "vite"
+          - "@vitejs/*"
+          - "@vue/*"
+          - "vue"
+          - "vue-router"
+          - "vue-tsc"
+      lint-format:
+        patterns:
+          - "eslint"
+          - "eslint-*"
+          - "@vue/eslint-*"
+          - "prettier"
+      unocss:
+        patterns:
+          - "unocss"
+          - "@unocss/*"
+      unplugins:
+        patterns:
+          - "unplugin-*"
+      element-plus:
+        patterns:
+          - "element-plus"
+          - "@element-plus/*"
+
+  # GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "03:00"
+      timezone: "Etc/UTC"
+    labels:
+      - "dependencies"
+      - "ci"
+    commit-message:
+      prefix: "deps(ci)"
