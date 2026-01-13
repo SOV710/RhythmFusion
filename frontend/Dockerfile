@@ -1,4 +1,4 @@
-FROM node:18 AS frontend-builder
+FROM node:25 AS frontend-builder
 WORKDIR /app
 COPY frontend/package*.json frontend/pnpm-lock.yaml ./
 RUN npm install -g pnpm && pnpm install
@@ -6,7 +6,7 @@ COPY frontend/ ./
 RUN pnpm build
 
 # 运行阶段：用 serve 包启动静态资源
-FROM node:18-slim
+FROM node:25-slim
 WORKDIR /app
 # 安装 serve
 RUN npm install -g serve
