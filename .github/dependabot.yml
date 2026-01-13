@@ -1,60 +1,120 @@
 version: 2
 
 updates:
-  # Frontend (pnpm) - use "npm" ecosystem
+  # 1) 前端：pnpm (以 npm 生态配置)，锁文件在 /frontend/pnpm-lock.yaml
   - package-ecosystem: "npm"
-    directory: "/RhythmFusion/frontend"
+    directory: "/frontend"
     schedule:
       interval: "weekly"
       day: "monday"
-      time: "03:00"
-      timezone: "Etc/UTC"
+      time: "06:00"
     open-pull-requests-limit: 10
     labels:
       - "dependencies"
       - "frontend"
     commit-message:
       prefix: "deps(frontend)"
-      include: "scope"
+    rebase-strategy: "auto"
 
-    # Reduce PR noise by grouping (optional but recommended)
+    # 可选：把依赖更新“分组”，减少 PR 噪音（尤其是前端依赖很多时）
     groups:
-      vite-and-vue-tooling:
+      vue-ecosystem:
         patterns:
-          - "vite"
-          - "@vitejs/*"
+          - "vue*"
           - "@vue/*"
-          - "vue"
           - "vue-router"
+          - "pinia*"
+      tooling:
+        patterns:
+          - "vite*"
+          - "@vitejs/*"
+          - "typescript"
           - "vue-tsc"
-      lint-format:
-        patterns:
-          - "eslint"
-          - "eslint-*"
-          - "@vue/eslint-*"
+          - "eslint*"
           - "prettier"
-      unocss:
-        patterns:
-          - "unocss"
-          - "@unocss/*"
-      unplugins:
-        patterns:
+          - "@tsconfig/*"
+          - "sass"
+          - "unocss*"
           - "unplugin-*"
-      element-plus:
+      misc:
         patterns:
-          - "element-plus"
-          - "@element-plus/*"
+          - "*"
 
-  # GitHub Actions
-  - package-ecosystem: "github-actions"
-    directory: "/"
+    # 可选：如果你不想要 beta/rc 版本，建议加这个（你现在有 unocss beta）
+    ignore:
+      - dependency-name: "unocss"
+        update-types:
+          - "version-update:semver-major"
+      - dependency-name: "@unocss/preset-attributify"
+        update-types:
+          - "version-update:semver-major"
+      - dependency-name: "@unocss/preset-wind3"
+        update-types:
+          - "version-update:semver-major"
+
+  # 2) 后端：Python pip (requirements.txt)
+  - package-ecosystem: "pip"
+    directory: "/backend"
     schedule:
       interval: "weekly"
       day: "monday"
-      time: "03:00"
-      timezone: "Etc/UTC"
+      time: "06:00"
+    open-pull-requests-limit: 10
     labels:
       - "dependencies"
-      - "ci"
+      - "backend"
     commit-message:
-      prefix: "deps(ci)"
+      prefix: "deps(backend)"
+    rebase-strategy: "auto"
+
+    # 可选：分组减少 PR
+    groups:
+      django-stack:
+        patterns:
+          - "Django"
+          - "djangorestframework*"
+          - "django-*"
+      misc:
+        patterns:
+          - "*"
+
+  # 3) 容器：Dockerfile 与 docker-compose.yml
+  #    - 根目录有 docker-compose.yml
+  #    - /frontend 和 /backend 也各有 Dockerfile
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+      time: "06:00"
+    labels:
+      - "dependencies"
+      - "docker"
+    commit-message:
+      prefix: "deps(docker)"
+    rebase-strategy: "auto"
+
+  - package-ecosystem: "docker"
+    directory: "/frontend"
+    schedule:
+      interval: "monthly"
+      time: "06:00"
+    labels:
+      - "dependencies"
+      - "docker"
+      - "frontend"
+    commit-message:
+      prefix: "deps(docker-frontend)"
+    rebase-strategy: "auto"
+
+  - package-ecosystem: "docker"
+    directory: "/backend"
+    schedule:
+      interval: "monthly"
+      time: "06:00"
+    labels:
+      - "dependencies"
+      - "docker"
+      - "backend"
+    commit-message:
+      prefix: "deps(docker-backend)"
+    rebase-strategy: "auto"
