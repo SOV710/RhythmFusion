@@ -15,9 +15,9 @@
   "dependencies": {
     "@eslint/plugin-kit": "0.3.5",
     "element-plus": "^2.11.3",
-    "pinia": "^3.0.1",
-    "vue": "^3.5.13",
-    "vue-router": "^4.5.0"
+    "pinia": "^3.0.4",
+    "vue": "^3.5.26",
+    "vue-router": "^4.6.4"
   },
   "devDependencies": {
     "@element-plus/icons-vue": "^2.3.1",
@@ -28,8 +28,8 @@
     "@unocss/preset-wind3": "66.1.0-beta.11",
     "@vitejs/plugin-vue": "^6.0.3",
     "@vue/eslint-config-prettier": "^10.2.0",
-    "@vue/eslint-config-typescript": "^14.5.0",
-    "@vue/tsconfig": "^0.7.0",
+    "@vue/eslint-config-typescript": "^14.6.0",
+    "@vue/tsconfig": "^0.8.1",
     "@vueuse/core": "^13.1.0",
     "axios": "^1.12.2",
     "eslint": "^9.39.2",
